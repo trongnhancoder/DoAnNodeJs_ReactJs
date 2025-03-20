@@ -1,13 +1,16 @@
 import { Link } from "react-router-dom";
-
+import logo from "../assets/logo.png";
 function Header() {
   return (
-    <nav className="bg-gray-800 text-white p-4 sticky top-0 z-10 shadow-lg flex">
-      <img src="../assets/logo.png" alt="Logo" className="w-16 h-16 mr-2" />
+    <nav className="bg-gray-800 text-white  p-4 sticky top-0 z-10 shadow-lg flex">
+      <Link to="/">
+        <img src={logo} alt="Logo" className="w-16 h-16 mr-2" />
+      </Link>
       <div className="container mx-auto flex justify-between items-center">
         <Link
           to="/"
-          className="flex items-center text-2xl font-bold tracking-tight"
+          className="flex items-center text-2xl font-bold tracking-tight 
+          bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 text-transparent bg-clip-text hover:scale-105 transition-transform duration-300"
         >
           HaDiDi Restaurant
         </Link>

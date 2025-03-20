@@ -15,22 +15,19 @@ function Reservation() {
     eventType: 'Đặt bàn',
   });
 
-  // State cho danh mục và phân trang
+
   const categories = ['Tất cả', 'Món khai vị', 'Món chính', 'Tráng miệng', 'Nước uống'];
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-
-  // State cho danh sách món ăn đã chọn
   const [selectedItems, setSelectedItems] = useState({});
   const [totalPrice, setTotalPrice] = useState(0);
 
-  // Xử lý thay đổi form
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Xử lý thêm món ăn
   const handleItemIncrement = (item) => {
     const newSelectedItems = { ...selectedItems };
     if (newSelectedItems[item.id]) {
@@ -55,14 +52,12 @@ function Reservation() {
     }
   };
 
-  // Xử lý gửi form
   const handleSubmit = (e) => {
     e.preventDefault();
     alert('Đặt lịch thành công! Tổng tiền: ' + totalPrice.toLocaleString() + ' VND');
     console.log({ ...formData, selectedItems, totalPrice });
   };
 
-  // Lọc menu theo danh mục
   const filteredMenu =
     selectedCategory === 'Tất cả'
       ? menuData
@@ -78,9 +73,9 @@ function Reservation() {
   // Xử lý thay đổi danh mục
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
-    setCurrentPage(1); // Reset về trang đầu tiên khi thay đổi danh mục
+    setCurrentPage(1); 
   };
-
+ 
   // Xử lý thay đổi trang
   const handlePageChange = (page) => {
     setCurrentPage(page);
