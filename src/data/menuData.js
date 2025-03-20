@@ -1,6 +1,12 @@
 export const menuData = [
-  { id: 1, name: 'Súp cua', category: 'Món khai vị', price: 50000, ingredients: ['Cua', 'Nấm'], image: 'https://images.unsplash.com/photo-1601313154288-2e2e3e' },
-  { id: 2, name: 'Bò bít tết', category: 'Món chính', price: 150000, ingredients: ['Bò', 'Khoai tây'], image: 'https://images.unsplash.com/photo-1600891964599-f' },
-  { id: 3, name: 'Bánh flan', category: 'Tráng miệng', price: 30000, ingredients: ['Sữa', 'Trứng'], image: 'https://images.unsplash.com/photo-1568901346375-2' },
-  { id: 4, name: 'Nước cam', category: 'Nước uống', price: 25000, ingredients: ['Cam'], image: 'https://images.unsplash.com/photo-1600271886742-4' },
+  { id: 1, category: "Món khai vị", name: "Gỏi cuốn", price: 50000 },
+  { id: 2, category: "Món khai vị", name: "Chả giò", price: 60000 },
+  { id: 3, category: "Món khai vị", name: "Súp cua", price: 70000 },
+  { id: 4, category: "Món chính", name: "Cơm tấm", price: 80000 },
+  { id: 5, category: "Món chính", name: "Phở bò", price: 90000 },
+  { id: 6, category: "Món chính", name: "Bún bò", price: 100000 },
+  { id: 7, category: "Tráng miệng", name: "Chè ba màu", price: 30000 },
+  { id: 8, category: "Tráng miệng", name: "Bánh flan", price: 25000 },
+  { id: 9, category: "Nước uống", name: "Trà đá", price: 5000 },
+  { id: 10, category: "Nước uống", name: "Cà phê sữa", price: 20000 },
 ];

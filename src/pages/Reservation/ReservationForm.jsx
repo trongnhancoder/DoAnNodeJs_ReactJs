@@ -1,22 +1,12 @@
-import { useState } from 'react';
-
-function Reservation() {
-  const [formData, setFormData] = useState({
-    date: '', time: '', guests: '', name: '', request: '', eventType: 'Đặt bàn',
-  });
-
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert('Đặt lịch thành công (mock)!');
-    console.log(formData);
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-6">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">Đặt lịch trực tuyến</h1>
-        <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-4 bg-white p-6 rounded-lg shadow-lg">
+function ReservationForm({ formData, handleChange, handleSubmit }) {
+    return (
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4 bg-white p-6 rounded-lg shadow-lg"
+      >
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Thông tin đặt lịch</h2>
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Loại sự kiện</label>
           <select
             name="eventType"
             value={formData.eventType}
@@ -28,6 +18,9 @@ function Reservation() {
             <option value="Cưới">Cưới</option>
             <option value="Hội nghị">Hội nghị</option>
           </select>
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Ngày</label>
           <input
             type="date"
             name="date"
@@ -36,6 +29,9 @@ function Reservation() {
             className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Giờ</label>
           <input
             type="time"
             name="time"
@@ -44,6 +40,9 @@ function Reservation() {
             className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Số khách</label>
           <input
             type="number"
             name="guests"
@@ -52,7 +51,11 @@ function Reservation() {
             placeholder="Số khách"
             className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
+            min="1"
           />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Họ tên</label>
           <input
             name="name"
             value={formData.name}
@@ -61,6 +64,9 @@ function Reservation() {
             className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">Yêu cầu đặc biệt</label>
           <textarea
             name="request"
             value={formData.request}
@@ -68,16 +74,15 @@ function Reservation() {
             placeholder="Yêu cầu đặc biệt"
             className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-md transition-colors"
-          >
-            Đặt ngay
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-export default Reservation;
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-md transition-colors font-semibold"
+        >
+          Đặt ngay
+        </button>
+      </form>
+    );
+  }
+  
+  export default ReservationForm;
