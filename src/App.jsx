@@ -1,33 +1,38 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Header from "./components/Header.jsx";
-import Footer from "./components/Footer.jsx";
-import Home from "./pages/Home.jsx";
-import Menu from "./pages/Menu/Menu.jsx";
-import Reservation from "./pages/Reservation/Reservation.jsx";
-import Gallery from "./pages/Gallery.jsx";
-import Review from "./pages/Review.jsx";
-import About from "./pages/About.jsx";
-import Contact from "./pages/Contact.jsx";
-import Login from "./pages/Login.jsx";
-import Blog from "./pages/Blog.jsx";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import About from './pages/About/About';
+import Menu from './pages/Menu/Menu';
+import Reservation from './pages/Reservation/Reservation';
+import Contact from './pages/Contact';
+import Auth from './components/Auth';
+import ForgotPasswordForm from './components/auth/ForgotPasswordForm';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
     <Router>
-      <Header />
-      <Routes>
-        <Route path="/about" element={<About />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/menu" element={<Menu />} />
-        <Route path="/reservation" element={<Reservation />} />
-        <Route path="/gallery" element={<Gallery />} />
-        <Route path="/review" element={<Review />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-      <Footer />
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/menu" element={<Menu />} />
+            <Route path="/reservation" element={<Reservation />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Auth />} />
+            <Route path="/register" element={<Auth />} />
+            <Route path="/forgot-password" element={<ForgotPasswordForm />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main> 
+        <Footer />
+      </div>
     </Router>
   );
 }
+
 export default App;

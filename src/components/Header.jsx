@@ -32,7 +32,7 @@ function Header() {
             Đặt lịch
           </Link>
           <Link to="/gallery" className="hover:text-gray-300 transition-colors">
-            Thư viện
+            Tiệc Của Bạn
           </Link>
           <Link to="/review" className="hover:text-gray-300 transition-colors">
             Đánh giá
@@ -42,9 +42,7 @@ function Header() {
             Liên hệ
           </Link>
 
-          <Link to="/blog" className="hover:text-gray-300 transition-colors">
-            Blog
-          </Link>
+
           <Link to="/login" className="hover:text-gray-300 transition-colors">
             Đăng nhập
           </Link>
