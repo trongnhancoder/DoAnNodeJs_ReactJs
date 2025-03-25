@@ -69,7 +69,7 @@ const ContactSection = () => {
                   </div>
                   <div>
                     <h4 className="font-medium text-gray-800">Email</h4>
-                    <p className="text-gray-600 mt-1">info@example.com</p>
+                    <p className="text-gray-600 mt-1">Nhannguyen311003@gmail.com</p>
                   </div>
                 </div>
                 
@@ -80,7 +80,7 @@ const ContactSection = () => {
                   <div>
                     <h4 className="font-medium text-gray-800">Địa chỉ</h4>
                     <p className="text-gray-600 mt-1">
-                      123 Đường Nguyễn Huệ, Quận 1<br />
+                    475 Điện Biên Phủ , Quận Bình Thạnh<br />
                       TP. Hồ Chí Minh, Việt Nam
                     </p>
                   </div>
@@ -166,7 +166,7 @@ const ContactSection = () => {
                 
                 <button
                   type="submit"
-                  className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-6 rounded-md transition duration-300"
+                  className="bg-primary-600 hover:bg-primary-700 text-black font-medium py-2 px-6 rounded-md transition duration-300 border border-background-600"ư
                 >
                   Gửi tin nhắn
                 </button>

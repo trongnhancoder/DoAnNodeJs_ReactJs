@@ -1,12 +1,18 @@
 function ReservationForm({ formData, handleChange, handleSubmit }) {
-    return (
+  return (
+    <div>
+      {" "}
       <form
         onSubmit={handleSubmit}
         className="space-y-4 bg-white p-6 rounded-lg shadow-lg"
       >
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Thông tin đặt lịch</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">
+          Thông tin đặt lịch
+        </h2>
         <div>
-          <label className="block text-gray-700 font-medium mb-2">Loại sự kiện</label>
+          <label className="block text-gray-700 font-medium mb-2">
+            Loại sự kiện
+          </label>
           <select
             name="eventType"
             value={formData.eventType}
@@ -42,7 +48,9 @@ function ReservationForm({ formData, handleChange, handleSubmit }) {
           />
         </div>
         <div>
-          <label className="block text-gray-700 font-medium mb-2">Số khách</label>
+          <label className="block text-gray-700 font-medium mb-2">
+            Số khách
+          </label>
           <input
             type="number"
             name="guests"
@@ -66,7 +74,9 @@ function ReservationForm({ formData, handleChange, handleSubmit }) {
           />
         </div>
         <div>
-          <label className="block text-gray-700 font-medium mb-2">Yêu cầu đặc biệt</label>
+          <label className="block text-gray-700 font-medium mb-2">
+            Yêu cầu đặc biệt
+          </label>
           <textarea
             name="request"
             value={formData.request}
@@ -82,7 +92,8 @@ function ReservationForm({ formData, handleChange, handleSubmit }) {
           Đặt ngay
         </button>
       </form>
-    );
-  }
-  
-  export default ReservationForm;
+    </div>
+  );
+}
+
+export default ReservationForm;

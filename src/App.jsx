@@ -6,7 +6,7 @@ import Home from './pages/Home';
 import About from './pages/About/About';
 import Menu from './pages/Menu/Menu';
 import Reservation from './pages/Reservation/Reservation';
-import Contact from './pages/Contact';
+import Contact from './pages/Contact/Contact';
 import Auth from './components/Auth';
 import ForgotPasswordForm from './components/auth/ForgotPasswordForm';
 import NotFound from './pages/NotFound';

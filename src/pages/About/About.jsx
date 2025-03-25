@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaAward, FaUsers, FaUtensils, FaClock } from "react-icons/fa";
 
 // Import tất cả các components
 import HeroSection from "../../components/about/HeroSection";
