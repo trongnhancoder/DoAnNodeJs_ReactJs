@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { menuData } from '../../data/MenuData.js';
+import { menuData } from '../../services/MenuData.js';
 import CategoryFilter from './CategoryFilter.jsx';
 import MenuList from './MenuList.jsx';
 

@@ -1,4 +1,4 @@
-import { blogData } from '../data/blogData.js';
+import { blogData } from '../services/blogData.js';
 
 function Blog() {
   return (

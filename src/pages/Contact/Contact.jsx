@@ -1,4 +1,4 @@
-// src/pages/Contact.jsx
+// src/pages/Contact/Contact.jsx
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock } from 'react-icons/fa';

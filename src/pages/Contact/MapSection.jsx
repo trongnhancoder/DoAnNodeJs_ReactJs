@@ -1,4 +1,4 @@
-// src/components/MapSection.jsx
+// src/pages/Contact/MapSection.jsx
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 function MapSection({ mapSrc, mapLink }) {

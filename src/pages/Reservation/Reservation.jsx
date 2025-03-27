@@ -2,12 +2,12 @@ import { useState } from "react";
 import { FaUser, FaUtensils, FaFileInvoice } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { menuData } from "../../data/MenuData.js";
+import { menuData } from "../../services/MenuData.js";
 import ReservationForm from "./ReservationForm.jsx";
 import MenuCategoryFilter from "./MenuCategoryFilter.jsx";
 import MenuList from "./MenuList.jsx";
 import Pagination from "./Pagination.jsx";
-import bg_image from "../../assets/bg_revervation.png";
+
 
 function Reservation() {
   const [currentStep, setCurrentStep] = useState(1);
