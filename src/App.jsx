@@ -4,24 +4,24 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Import components chung
-import Header from './components/Header';
-import Footer from './components/Footer';
+import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
 
 // Import các trang chính
-import Home from './pages/Home';
+import Home from './pages/layout/Home';
 import About from './pages/About/About';
 import Menu from './pages/Menu/Menu';
 import Contact from './pages/Contact/Contact';
 import Reservation from './pages/Reservation/Reservation';
-import Blog from './pages/Blog';
+
 
 // Import các components Auth
-import Login from './components/auth/LoginForm';
-import Register from './components/auth/RegisterForm';
-import ForgotPassword from './components/auth/ForgotPasswordForm';
+import Login from './components/User/auth/LoginForm';
+import Register from './components/User/auth/RegisterForm';
+import ForgotPassword from './components/User/auth/ForgotPasswordForm';
 
 // Import trang lỗi
-import NotFound from './pages/NotFound';
+import NotFound from './pages/layout/NotFound';
 
 function App() {
   return (
@@ -55,7 +55,7 @@ function App() {
             <Route path="/menu" element={<Menu />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/reservation" element={<Reservation />} />
-            <Route path="/blog" element={<Blog />} />
+           
             
             {/* Trang Auth */}
             <Route path="/login" element={<Login />} />

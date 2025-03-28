@@ -2,10 +2,10 @@
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock } from 'react-icons/fa';
-import HeroSection from './HeroSection';
-import ContactInfoCard from './ContactInfoCard';
-import ContactForm from './ContactForm';
-import MapSection from './MapSection';
+import HeroSection from '../../components/User/Contact/HeroSection';
+import ContactInfoCard from '../../components/User/Contact/ContactInfoCard';
+import ContactForm from '../../components/User/Contact/ContactForm';
+import MapSection from '../../components/User/Contact/MapSection';
 
 function Contact() {
   const contactInfo = [

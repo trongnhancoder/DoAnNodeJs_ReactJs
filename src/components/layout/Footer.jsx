@@ -1,8 +1,8 @@
 import React from 'react';
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaFacebook, FaInstagram, FaTwitter, FaHeart } from 'react-icons/fa';
-import facebookIcon from "../assets/facebook.png";
-import instagramIcon from "../assets/instagram.png";
-import logo from "../assets/logo.png";
+import facebookIcon from "../../assets/facebook.png";
+import instagramIcon from "../../assets/instagram.png";
+import logo from "../../assets/logo.png";
 
 function Footer() {
   return (

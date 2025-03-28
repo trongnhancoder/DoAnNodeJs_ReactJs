@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 // Import tất cả các components
-import HeroSection from "../../components/about/HeroSection";
-import FeaturesSection from "../../components/about/FeaturesSection";
-import GallerySection from "../../components/about/GallerySection";
-import FAQSection from "../../components/about/FAQSection";
-import ContactSection from "../../components/about/ContactSection";
+import HeroSection from "../../components/User/about/HeroSection";
+import FeaturesSection from "../../components/User/about/FeaturesSection";
+import GallerySection from "../../components/User/about/GallerySection";
+import FAQSection from "../../components/User/about/FAQSection";
+import ContactSection from "../../components/User/about/ContactSection";
 
 // Tạm thời bỏ các import này
 // import GallerySection from "../../components/about/GallerySection";

@@ -7,7 +7,7 @@ import FormInput from './FormInput';
 import PasswordInput from './PasswordInput';
 import SubmitButton from './SubmitButton';
 import AuthMessage from './AuthMessage';
-import { loginUser } from '../../services/authService';
+import { loginUser } from '../../../services/authService';
 // Import SocialLogin đã bị xóa
 
 const LoginForm = () => {

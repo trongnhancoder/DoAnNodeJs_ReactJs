@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import video from "../assets/restaurant-video.mp4"; 
+import video from "../../assets/restaurant-video.mp4"; 
 
 function Home() {
   return (

@@ -7,7 +7,7 @@ import FormInput from './FormInput';
 import PasswordInput from './PasswordInput';
 import SubmitButton from './SubmitButton';
 import AuthMessage from './AuthMessage';
-import { registerUser } from '../../services/authService';
+import { registerUser } from '../../../services/authService';
 import CryptoJS from 'crypto-js';
 
 const RegisterForm = () => {
