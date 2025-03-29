@@ -6,6 +6,8 @@ import BookingPagination from '../../components/User/BookingHistory/BookingPagin
 import EmptyBookingState from '../../components/User/BookingHistory/EmptyBookingState';
 import BookingHeader from '../../components/User/BookingHistory/BookingHeader';
 import LoadingSpinner from '../../components/User/BookingHistory/LoadingSpinner';
+import BookingEditForm from '../../components/User/BookingHistory/BookingEditForm';
+import BookingDetailModal from '../../components/User/BookingHistory/BookingDetailModal';
 
 // Dữ liệu mẫu không thay đổi...
 const sampleBookings = [
@@ -14,21 +16,130 @@ const sampleBookings = [
     bookingCode: 'TP0001',
     type: 'PARTY',
     bookingDate: '2023-11-15T18:30:00',
-    location: 'Phòng VIP 1, Tầng 2',
     status: 'Đã xác nhận',
     price: 5000000,
-    guests: 20
+    guests: 20,
+    partyType: 'Sinh nhật',
+    menuName: 'Thực đơn cao cấp A',
+    decoration: 'Trang trí theo chủ đề',
+    additionalServices: ['Âm thanh ánh sáng', 'MC dẫn chương trình'],
+    contactName: 'Nguyễn Văn A',
+    contactPhone: '0987654321',
+    contactEmail: 'nguyenvana@example.com',
+    bookingNotes: 'Cần chuẩn bị bánh sinh nhật'
   },
-  // Các dữ liệu mẫu khác giữ nguyên...
+  {
+    id: '2',
+    bookingCode: 'RP0002',
+    type: 'ROOM',
+    bookingDate: '2023-11-20T19:00:00',
+    status: 'Đang chờ',
+    price: 2000000,
+    guests: 6,
+    roomType: 'Phòng VIP',
+    duration: 3,
+    roomServices: ['Đồ uống miễn phí', 'Karaoke'],
+    notes: 'Cần bàn ở vị trí yên tĩnh',
+    contactName: 'Trần Thị B',
+    contactPhone: '0912345678',
+    contactEmail: 'tranthib@example.com'
+  },
+  {
+    id: '3',
+    bookingCode: 'TP0003',
+    type: 'PARTY',
+    bookingDate: '2023-10-25T17:00:00',
+    status: 'Hoàn thành',
+    price: 8000000,
+    guests: 50,
+    partyType: 'Liên hoan công ty',
+    menuName: 'Thực đơn đặc biệt',
+    decoration: 'Trang trí theo thương hiệu',
+    additionalServices: ['Âm thanh ánh sáng', 'MC dẫn chương trình', 'Quay phim chụp ảnh'],
+    contactName: 'Lê Văn C',
+    contactPhone: '0977889900',
+    contactEmail: 'levanc@company.com',
+    bookingNotes: 'Chuẩn bị màn hình trình chiếu'
+  },
+  {
+    id: '4',
+    bookingCode: 'RP0004',
+    type: 'ROOM',
+    bookingDate: '2023-12-05T18:00:00',
+    status: 'Đã xác nhận',
+    price: 3000000,
+    guests: 10,
+    roomType: 'Phòng thường',
+    duration: 4,
+    roomServices: ['Đồ uống miễn phí', 'Bàn ăn tối'],
+    contactName: 'Phạm Thị D',
+    contactPhone: '0966778899',
+    contactEmail: 'phamthid@example.com',
+    bookingNotes: 'Đặt thêm đồ ăn kèm'
+  },
+  {
+    id: '5',
+    bookingCode: 'TP0005',
+    type: 'PARTY',
+    bookingDate: '2023-10-10T19:30:00',
+    status: 'Đã hủy',
+    price: 6000000,
+    guests: 30,
+    partyType: 'Kỷ niệm ngày cưới',
+    menuName: 'Thực đơn hải sản',
+    decoration: 'Trang trí lãng mạn',
+    additionalServices: ['Âm thanh ánh sáng', 'Quay phim chụp ảnh'],
+    contactName: 'Hoàng Văn E',
+    contactPhone: '0944556677',
+    contactEmail: 'hoangvane@example.com'
+  },
+  {
+    id: '6',
+    bookingCode: 'RP0006',
+    type: 'ROOM',
+    bookingDate: '2023-11-28T20:00:00',
+    status: 'Đang chờ',
+    price: 1500000,
+    guests: 4,
+    roomType: 'Phòng thường',
+    duration: 2,
+    roomServices: ['Đồ uống miễn phí'],
+    notes: 'Cần ghế cao cho trẻ em',
+    contactName: 'Vũ Thị F',
+    contactPhone: '0933445566',
+    contactEmail: 'vuthif@example.com'
+  },
+  {
+    id: '7',
+    bookingCode: 'TP0007',
+    type: 'PARTY',
+    bookingDate: '2023-12-20T18:00:00',
+    status: 'Đã xác nhận',
+    price: 10000000,
+    guests: 100,
+    partyType: 'Tiệc tất niên',
+    menuName: 'Thực đơn truyền thống',
+    decoration: 'Trang trí theo chủ đề Giáng sinh',
+    additionalServices: ['Âm thanh ánh sáng', 'MC dẫn chương trình', 'Quay phim chụp ảnh', 'Biểu diễn văn nghệ'],
+    contactName: 'Đặng Văn G',
+    contactPhone: '0955667788',
+    contactEmail: 'dangvang@company.com',
+    bookingNotes: 'Cần chuẩn bị sân khấu lớn'
+  },
   {
     id: '8',
     bookingCode: 'RP0008',
     type: 'ROOM',
     bookingDate: '2023-11-05T19:00:00',
-    location: 'Phòng view biển, Tầng 4',
     status: 'Hoàn thành',
     price: 4000000,
-    guests: 8
+    guests: 8,
+    roomType: 'Phòng VIP',
+    duration: 5,
+    roomServices: ['Đồ uống miễn phí', 'Karaoke', 'Bàn ăn tối'],
+    contactName: 'Ngô Thị H',
+    contactPhone: '0922334455',
+    contactEmail: 'ngothih@example.com'
   }
 ];
 
@@ -46,6 +157,11 @@ const BookingHistory = () => {
   const [typeFilter, setTypeFilter] = useState('all');
   const [sortOrder, setSortOrder] = useState('newest'); // newest, oldest, price-high, price-low
   const [showEmptyState, setShowEmptyState] = useState(false); // State để hiển thị màn hình trống
+  
+  // Thêm state mới để quản lý form chỉnh sửa và xem chi tiết
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [currentBooking, setCurrentBooking] = useState(null);
 
   useEffect(() => {
     const fetchBookingHistory = async () => {
@@ -131,13 +247,73 @@ const BookingHistory = () => {
     fetchBookingHistory();
   }, [currentPage, useTestData, statusFilter, typeFilter, sortOrder, showEmptyState]);
 
-  const handleViewDetails = (bookingId, bookingType) => {
-    if (bookingType === 'PARTY') {
-      navigate(`/chi-tiet-tiec/${bookingId}`);
-    } else if (bookingType === 'ROOM') {
-      navigate(`/chi-tiet-phong/${bookingId}`);
-    } else {
-      navigate(`/chi-tiet-dat-cho/${bookingId}`);
+  // Thêm hàm kiểm tra trạng thái vào component BookingHistory
+  const canEditBooking = (status) => {
+    return status === 'Đang chờ';
+  };
+
+  // Thay đổi hàm xử lý xem chi tiết để mở modal thay vì chuyển trang
+  const handleViewDetails = (booking) => {
+    setCurrentBooking(booking);
+    setShowDetailModal(true);
+  };
+
+  // Cập nhật hàm handleEditBooking
+  const handleEditBooking = (booking) => {
+    if (!canEditBooking(booking.status)) {
+      alert('Chỉ có thể chỉnh sửa đặt chỗ có trạng thái "Đang chờ".');
+      return;
+    }
+    
+    setCurrentBooking(booking);
+    setShowEditForm(true);
+    // Nếu đang mở modal chi tiết, đóng nó lại
+    if (showDetailModal) {
+      setShowDetailModal(false);
+    }
+  };
+  
+  // Thêm hàm đóng form chỉnh sửa
+  const handleCloseEditForm = () => {
+    setShowEditForm(false);
+    setCurrentBooking(null);
+  };
+  
+  // Thêm hàm đóng modal chi tiết
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+    setCurrentBooking(null);
+  };
+  
+  // Thêm hàm lưu thông tin đã chỉnh sửa
+  const handleSaveBooking = (updatedBooking) => {
+    if (useTestData) {
+      setBookings(bookings.map(booking => 
+        booking.id === updatedBooking.id ? updatedBooking : booking
+      ));
+      setShowEditForm(false);
+      setCurrentBooking(null);
+      alert('Cập nhật thông tin thành công');
+      return;
+    }
+    
+    // Thực hiện gọi API cập nhật thông tin
+    try {
+      axios.put(`/api/bookings/${updatedBooking.id}`, updatedBooking, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }).then(() => {
+        setBookings(bookings.map(booking => 
+          booking.id === updatedBooking.id ? updatedBooking : booking
+        ));
+        setShowEditForm(false);
+        setCurrentBooking(null);
+        alert('Cập nhật thông tin thành công');
+      });
+    } catch (error) {
+      console.error('Lỗi khi cập nhật thông tin:', error);
+      alert('Không thể cập nhật thông tin');
     }
   };
 
@@ -306,7 +482,8 @@ const BookingHistory = () => {
                 <BookingTable 
                   bookings={bookings} 
                   onViewDetails={handleViewDetails} 
-                  onCancelBooking={handleCancelBooking} 
+                  onCancelBooking={handleCancelBooking}
+                  onEditBooking={handleEditBooking}
                 />
                 
                 <BookingPagination 
@@ -326,6 +503,24 @@ const BookingHistory = () => {
           </>
         )}
       </div>
+      
+      {/* Form chỉnh sửa thông tin */}
+      {showEditForm && currentBooking && canEditBooking(currentBooking.status) && (
+        <BookingEditForm 
+          booking={currentBooking}
+          onClose={handleCloseEditForm}
+          onSave={handleSaveBooking}
+        />
+      )}
+      
+      {/* Modal xem chi tiết */}
+      {showDetailModal && currentBooking && (
+        <BookingDetailModal 
+          booking={currentBooking}
+          onClose={handleCloseDetailModal}
+          onEdit={handleEditBooking}
+        />
+      )}
     </div>
   );
 };

@@ -2,98 +2,125 @@ import React from 'react';
 import StatusBadge from './StatusBadge';
 import BookingTypeTag from './BookingTypeTag';
 
-const BookingTable = ({ bookings, onViewDetails, onCancelBooking }) => {
+const BookingTable = ({ bookings, onViewDetails, onCancelBooking, onEditBooking }) => {
+  // Format thời gian và giá tiền
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN', { 
+      style: 'currency', 
+      currency: 'VND',
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  // Xác định màu sắc cho trạng thái
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Đã xác nhận':
+        return 'bg-green-100 text-green-800';
+      case 'Đang chờ':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Hoàn thành':
+        return 'bg-blue-100 text-blue-800';
+      case 'Đã hủy':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Kiểm tra xem đặt chỗ có được chỉnh sửa không
+  const canEdit = (status) => {
+    return status === 'Đang chờ';
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Loại
+              Mã đặt chỗ
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Mã đặt chỗ
+              Loại
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Ngày đặt
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Địa điểm
-            </th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Số khách
+              Trạng thái
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Giá tiền
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Trạng thái
+              Số khách
             </th>
-            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Hành động
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Thao tác
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {bookings.map((booking) => (
-            <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <BookingTypeTag type={booking.type} />
-              </td>
+            <tr key={booking.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm font-medium text-gray-900">{booking.bookingCode}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="text-sm text-gray-900">
-                  {new Date(booking.bookingDate).toLocaleDateString('vi-VN')}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {new Date(booking.bookingDate).toLocaleTimeString('vi-VN', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
+                  {booking.type === 'PARTY' ? 'Tiệc' : 'Phòng'}
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-900">{booking.location}</div>
+                <div className="text-sm text-gray-900">{formatDate(booking.bookingDate)}</div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center text-sm text-gray-900">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  {booking.guests} người
-                </div>
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(booking.status)}`}>
+                  {booking.status}
+                </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">
-                  {booking.price?.toLocaleString('vi-VN')} VND
-                </div>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {formatPrice(booking.price)}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <StatusBadge status={booking.status} />
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {booking.guests} người
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div className="flex justify-end space-x-2">
+                <div className="flex space-x-2">
                   <button
-                    onClick={() => onViewDetails(booking.id, booking.type)}
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    onClick={() => onViewDetails(booking)}
+                    className="text-indigo-600 hover:text-indigo-900 transition duration-150 ease-in-out"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    Chi tiết
+                    Xem chi tiết
                   </button>
-                  {['Đã xác nhận', 'Đang chờ'].includes(booking.status) && (
+                  
+                  {canEdit(booking.status) && (
+                    <button
+                      onClick={() => onEditBooking(booking)}
+                      className="text-blue-600 hover:text-blue-900 transition duration-150 ease-in-out"
+                    >
+                      Chỉnh sửa
+                    </button>
+                  )}
+                  
+                  {booking.status === 'Đang chờ' && (
                     <button
                       onClick={() => onCancelBooking(booking.id)}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      className="text-red-600 hover:text-red-900 transition duration-150 ease-in-out"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Hủy
+                      Hủy đặt chỗ
                     </button>
                   )}
                 </div>

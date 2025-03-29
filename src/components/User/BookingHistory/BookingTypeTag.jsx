@@ -1,24 +1,24 @@
 import React from 'react';
 
 const BookingTypeTag = ({ type }) => {
-  let display, colorClass;
+  let display, bgColorClass;
   
   switch(type) {
     case 'PARTY':
       display = 'Tiệc';
-      colorClass = 'bg-purple-100 text-purple-800';
+      bgColorClass = 'bg-purple-100 text-purple-800';
       break;
     case 'ROOM':
       display = 'Phòng';
-      colorClass = 'bg-indigo-100 text-indigo-800';
+      bgColorClass = 'bg-blue-100 text-blue-800';
       break;
     default:
       display = 'Khác';
-      colorClass = 'bg-gray-100 text-gray-800';
+      bgColorClass = 'bg-gray-100 text-gray-800';
   }
   
   return (
-    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${colorClass}`}>
+    <span className={`px-3 py-1 rounded-full text-xs font-medium ${bgColorClass}`}>
       {display}
     </span>
   );
