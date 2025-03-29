@@ -13,17 +13,29 @@ import About from './pages/About/About';
 import Menu from './pages/Menu/Menu';
 import Contact from './pages/Contact/Contact';
 import Reservation from './pages/Reservation/Reservation';
-
+import BookingHistory from './pages/BookingHistory/BookingHistory';
 
 // Import các components Auth
 import Login from './components/User/auth/LoginForm';
 import Register from './components/User/auth/RegisterForm';
 import ForgotPassword from './components/User/auth/ForgotPasswordForm';
 
+// Import Admin pages
+import Dashboard from './pages/admin/Dashboard';
+import UsersPage from './pages/admin/users';
+import MenuPage from './pages/admin/menu';
+import OrdersPage from './pages/admin/orders';
+import SettingsPage from './pages/admin/settings';
+
 // Import trang lỗi
 import NotFound from './pages/layout/NotFound';
 
 function App() {
+  
+  const isAdminRoute = (pathname) => {
+    return pathname.startsWith('/admin');
+  };
+
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
@@ -43,8 +55,8 @@ function App() {
           progressClassName="bg-yellow-500"
         />
         
-        {/* Header */}
-        <Header />
+        {/* Điều kiện hiển thị Header và Footer */}
+        {!isAdminRoute(window.location.pathname) && <Header />}
         
         {/* Main content */}
         <main className="flex-grow">
@@ -55,12 +67,22 @@ function App() {
             <Route path="/menu" element={<Menu />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/reservation" element={<Reservation />} />
+            <Route path="/BookingHistory" element={<BookingHistory />} />
+            {/* <Route path="/booking-details/:id" element={<BookingDetails />} /> */}
            
             
             {/* Trang Auth */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            
+            {/* Routes Admin */}
+            <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/users" element={<UsersPage />} />
+            <Route path="/admin/menu" element={<MenuPage />} />
+            <Route path="/admin/orders" element={<OrdersPage />} />
+           
+            <Route path="/admin/settings" element={<SettingsPage />} />
             
             {/* Trang lỗi - comment các Route tạm thời chưa cần sử dụng */}
             {/* <Route path="/error/server" element={<ServerError />} /> */}
@@ -72,8 +94,8 @@ function App() {
           </Routes>
         </main>
         
-        {/* Footer */}
-        <Footer />
+        {/* Điều kiện hiển thị Footer */}
+        {!isAdminRoute(window.location.pathname) && <Footer />}
       </div>
     </Router>
   );

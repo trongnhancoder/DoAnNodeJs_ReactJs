@@ -86,7 +86,7 @@ function Header() {
               Đặt lịch
             </NavLink>
             
-            <NavLink to="/gallery" isActive={isActive("/gallery")} isScrolled={isScrolled}>
+            <NavLink to="/BookingHistory" isActive={isActive("/BookingHistory")} isScrolled={isScrolled}>
               Tiệc Của Bạn
             </NavLink>
             
