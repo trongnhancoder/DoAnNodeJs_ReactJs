@@ -90,7 +90,7 @@ function Header() {
               Tiệc Của Bạn
             </NavLink>
             
-            <NavLink to="/review" isActive={isActive("/review")} isScrolled={isScrolled}>
+            <NavLink to="/CustomerReview" isActive={isActive("/CustomerReview")} isScrolled={isScrolled}>
               Đánh giá
             </NavLink>
             

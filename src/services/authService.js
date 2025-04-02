@@ -1,164 +1,70 @@
 import axios from 'axios';
 
-// Cấu hình base URL cho API
-const API_URL = 'http://localhost/RestAPIRestaurant/users'; // Thay đổi cho phù hợp với API của bạn
+const API_URL = 'http://localhost/restapirestaurant/users';
 
-// Hàm đăng ký người dùng với xử lý lỗi cải tiến
+export const loginUser = async (userData) => {
+  try {
+    console.log('Sending login data:', userData);
+
+    const response = await axios.post(`${API_URL}/login`, {
+      username: userData.username, // Có thể là username hoặc email
+      password: userData.password
+    });
+
+    console.log('Server response:', response.data);
+
+    // Kiểm tra response theo cấu trúc API của bạn
+    if (response.data && response.data.status === "success") {
+      // API của bạn trả về token khi thành công
+      return {
+        status: true,
+        data: response.data.data, // Token từ JWT
+        message: 'Đăng nhập thành công!'
+      };
+    } else {
+      return {
+        status: false,
+        data: null,
+        message: response.data.message // Message lỗi từ API
+      };
+    }
+
+  } catch (error) {
+    console.error('Login error:', error);
+    // Xử lý các trường hợp lỗi từ API của bạn
+    const errorMessage = error.response?.data?.message || 'Đăng nhập thất bại';
+    return {
+      status: false,
+      data: null,
+      message: errorMessage
+    };
+  }
+};
+// Hàm đăng ký
 export const registerUser = async (userData) => {
   try {
-    console.log('Đang gửi dữ liệu đăng ký:', userData);
-    
-    const response = await axios.post(`${API_URL}/register`, userData);
-    
-    console.log('Phản hồi từ API đăng ký:', response);
-    
-    // Trả về response đã được chuẩn hóa
-    return {
-      status: true,
-      success: true,
-      data: response.data,
-      message: response.data.message || 'Đăng ký thành công!'
-    };
-  } catch (error) {
-    console.error('Lỗi đăng ký:', error);
-    
-    // Xử lý lỗi từ API
-    if (error.response) {
-      console.log('Chi tiết lỗi API:', error.response.data);
-      
-      // Chuẩn hóa dữ liệu lỗi
-      return {
-        status: false,
-        success: false,
-        ...error.response.data, // Giữ nguyên dữ liệu từ API
-        message: error.response.data.message || 'Đăng ký thất bại!',
-        errors: error.response.data.errors || {} // Đảm bảo có trường errors
-      };
-    }
-    
-    // Lỗi mạng hoặc lỗi khác
-    return {
-      status: false,
-      success: false,
-      message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.'
-    };
-  }
-};
+    console.log('Register request:', userData);
 
-// Hàm đăng nhập
-export const loginUser = async (credentials) => {
-  try {
-    const response = await axios.post(`${API_URL}/login`, credentials);
-    
-    return {
-      status: true,
-      success: true,
-      data: response.data,
-      message: response.data.message || 'Đăng nhập thành công!'
-    };
-  } catch (error) {
-    if (error.response) {
-      return {
-        status: false,
-        success: false,
-        ...error.response.data,
-        message: error.response.data.message || 'Đăng nhập thất bại!'
-      };
-    }
-    
-    return {
-      status: false,
-      success: false,
-      message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.'
-    };
-  }
-};
-
-// Kiểm tra mã xác nhận quên mật khẩu
-export const verifyResetCode = async (email, code) => {
-  try {
-    const response = await axios.post(`${API_URL}/verify-reset-code`, { email, code });
-    return {
-      status: true,
-      success: true,
-      data: response.data
-    };
-  } catch (error) {
-    if (error.response) {
-      return {
-        status: false,
-        success: false,
-        ...error.response.data
-      };
-    }
-    return {
-      status: false,
-      success: false,
-      message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.'
-    };
-  }
-};
-
-// Cập nhật mật khẩu mới
-export const resetPassword = async (email, newPassword, code) => {
-  try {
-    const response = await axios.post(`${API_URL}/reset-password`, {
-      email,
-      newPassword,
-      code
+    const response = await axios.post(API_URL, {
+      username: userData.username,
+      email: userData.email,
+      password: userData.password
     });
-    return {
-      status: true,
-      success: true,
-      data: response.data
-    };
-  } catch (error) {
-    if (error.response) {
-      return {
-        status: false,
-        success: false,
-        ...error.response.data
-      };
-    }
-    return {
-      status: false,
-      success: false,
-      message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.'
-    };
-  }
-};
 
-// Gửi yêu cầu quên mật khẩu
-export const forgotPassword = async (email) => {
-  try {
-    const response = await axios.post(`${API_URL}/forgot-password`, { email });
+    console.log('Register response:', response.data);
+
     return {
       status: true,
-      success: true,
       data: response.data,
-      message: response.data.message || 'Đã gửi email hướng dẫn đặt lại mật khẩu!'
+      message: 'Đăng ký thành công!'
     };
+
   } catch (error) {
-    if (error.response) {
-      return {
-        status: false,
-        success: false,
-        ...error.response.data,
-        message: error.response.data.message || 'Không thể gửi yêu cầu đặt lại mật khẩu!'
-      };
-    }
+    console.error('Register error:', error);
     return {
       status: false,
-      success: false,
-      message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.'
+      data: null,
+      message: 'Đăng ký thất bại, vui lòng thử lại'
     };
   }
-};
-
-export default {
-  registerUser,
-  loginUser,
-  forgotPassword,
-  verifyResetCode,
-  resetPassword
 };

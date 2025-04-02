@@ -1,4 +1,11 @@
 import React, { useState } from 'react';
+import DatePicker from 'react-datepicker';
+import { registerLocale } from 'react-datepicker';
+import vi from 'date-fns/locale/vi';
+import { FaCalendarAlt, FaClock, FaUsers, FaTimes, FaSave } from 'react-icons/fa';
+import "react-datepicker/dist/react-datepicker.css";
+
+registerLocale('vi', vi);
 
 const BookingEditForm = ({ booking, onClose, onSave }) => {
   // Kiểm tra xem đặt chỗ có được chỉnh sửa không
@@ -31,155 +38,191 @@ const BookingEditForm = ({ booking, onClose, onSave }) => {
   }
 
   const [formData, setFormData] = useState({
-    id: booking.id,
     bookingCode: booking.bookingCode,
     type: booking.type,
-    bookingDate: new Date(booking.bookingDate).toISOString().slice(0, 16),
     status: booking.status,
-    price: booking.price,
-    guests: booking.guests
+    bookingDate: new Date(booking.bookingDate),
+    guests: booking.guests,
+    price: booking.price
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: name === 'guests' || name === 'price' ? parseInt(value, 10) : value
-    });
+  const [errors, setErrors] = useState({});
+
+  // Xử lý thay đổi ngày giờ
+  const handleDateChange = (date) => {
+    setFormData(prev => ({
+      ...prev,
+      bookingDate: date
+    }));
+    setErrors(prev => ({ ...prev, bookingDate: '' }));
+  };
+
+  // Xử lý thay đổi số lượng khách
+  const handleGuestsChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (value >= 1 && value <= 20) {
+      setFormData(prev => ({
+        ...prev,
+        guests: value
+      }));
+      setErrors(prev => ({ ...prev, guests: '' }));
+    }
+  };
+
+  // Validate form
+  const validateForm = () => {
+    const newErrors = {};
+    const selectedDate = new Date(formData.bookingDate);
+    const now = new Date();
+    const minDate = new Date();
+    minDate.setDate(now.getDate() + 1);
+    minDate.setHours(0, 0, 0, 0);
+
+    const maxDate = new Date();
+    maxDate.setDate(now.getDate() + 30);
+    maxDate.setHours(23, 59, 59, 999);
+
+    if (selectedDate < minDate) {
+      newErrors.bookingDate = 'Chỉ được đặt từ ngày mai trở đi';
+    }
+    if (selectedDate > maxDate) {
+      newErrors.bookingDate = 'Chỉ được đặt trước tối đa 30 ngày';
+    }
+
+    const hour = selectedDate.getHours();
+    if (hour < 10 || hour >= 21) {
+      newErrors.bookingDate = 'Giờ đặt phải từ 10:00 đến 21:00';
+    }
+
+    if (!formData.guests || formData.guests < 1 || formData.guests > 20) {
+      newErrors.guests = 'Số lượng khách phải từ 1-20 người';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({
-      ...formData,
-      bookingDate: new Date(formData.bookingDate).toISOString()
-    });
+    if (validateForm()) {
+      onSave(formData);
+    }
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">Chỉnh sửa thông tin đặt chỗ</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-800">
+            Chỉnh sửa thông tin đặt chỗ
+          </h2>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <FaTimes className="w-5 h-5" />
           </button>
         </div>
-        
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label htmlFor="bookingCode" className="block text-sm font-medium text-gray-700 mb-1">
-                Mã đặt chỗ
-              </label>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Mã đặt chỗ - Readonly */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mã đặt chỗ
+            </label>
+            <div className="relative">
               <input
                 type="text"
-                id="bookingCode"
-                name="bookingCode"
                 value={formData.bookingCode}
                 readOnly
-                className="bg-gray-100 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-                Loại đặt chỗ
-              </label>
-              <select
-                id="type"
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              >
-                <option value="PARTY">Tiệc</option>
-                <option value="ROOM">Phòng</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700 mb-1">
-                Ngày và giờ
-              </label>
-              <input
-                type="datetime-local"
-                id="bookingDate"
-                name="bookingDate"
-                value={formData.bookingDate}
-                onChange={handleChange}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                Trạng thái
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              >
-                <option value="Đã xác nhận">Đã xác nhận</option>
-                <option value="Đang chờ">Đang chờ</option>
-                <option value="Hoàn thành">Hoàn thành</option>
-                <option value="Đã hủy">Đã hủy</option>
-              </select>
-            </div>
-            
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                Giá tiền (VNĐ)
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                min="0"
-                step="100000"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-1">
-                Số lượng khách
-              </label>
-              <input
-                type="number"
-                id="guests"
-                name="guests"
-                value={formData.guests}
-                onChange={handleChange}
-                min="1"
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="w-full px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-500 cursor-not-allowed"
               />
             </div>
           </div>
-          
-          <div className="flex justify-end space-x-3 mt-6">
+
+          {/* Trạng thái - Readonly */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Trạng thái
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={formData.status}
+                readOnly
+                className="w-full px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-lg text-gray-500 cursor-not-allowed"
+              />
+            </div>
+          </div>
+
+          {/* Ngày và giờ */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ngày và giờ <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <DatePicker
+                selected={formData.bookingDate}
+                onChange={handleDateChange}
+                showTimeSelect
+                dateFormat="dd/MM/yyyy HH:mm"
+                timeFormat="HH:mm"
+                timeIntervals={30}
+                minDate={new Date(new Date().setDate(new Date().getDate() + 1))}
+                maxDate={new Date(new Date().setDate(new Date().getDate() + 30))}
+                minTime={new Date().setHours(10, 0)}
+                maxTime={new Date().setHours(20, 30)}
+                locale="vi"
+                className={`w-full px-4 py-2.5 border rounded-lg ${
+                  errors.bookingDate ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              <FaCalendarAlt className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            </div>
+            {errors.bookingDate && (
+              <p className="mt-1 text-sm text-red-500">{errors.bookingDate}</p>
+            )}
+          </div>
+
+          {/* Số lượng khách */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Số lượng khách <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                value={formData.guests}
+                onChange={handleGuestsChange}
+                min="1"
+                max="20"
+                className={`w-full px-4 py-2.5 border rounded-lg ${
+                  errors.guests ? 'border-red-500' : 'border-gray-300'
+                }`}
+              />
+              <FaUsers className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            </div>
+            {errors.guests && (
+              <p className="mt-1 text-sm text-red-500">{errors.guests}</p>
+            )}
+          </div>
+
+          {/* Buttons */}
+          <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
             >
-              Hủy
+              <FaTimes className="w-4 h-4" />
+              <span>Hủy</span>
             </button>
             <button
               type="submit"
-              className="inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors flex items-center space-x-2"
             >
-              Lưu thay đổi
+              <FaSave className="w-4 h-4" />
+              <span>Lưu thay đổi</span>
             </button>
           </div>
         </form>

@@ -163,9 +163,29 @@ const BookingHistory = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentBooking, setCurrentBooking] = useState(null);
 
+  // Thêm hàm format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+
+  // Thêm hàm format time
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+
   useEffect(() => {
     const fetchBookingHistory = async () => {
-      // Hiển thị màn hình loading
       setLoading(true);
       
       setTimeout(() => {
@@ -176,26 +196,32 @@ const BookingHistory = () => {
         }
         
         if (useTestData) {
-          // Lọc dữ liệu theo bộ lọc đã chọn
           let filteredBookings = [...sampleBookings];
           
-          // Lọc theo status
+          // Lọc theo status và type (giữ nguyên)
           if (statusFilter !== 'all') {
             filteredBookings = filteredBookings.filter(booking => booking.status === statusFilter);
           }
           
-          // Lọc theo type
           if (typeFilter !== 'all') {
             filteredBookings = filteredBookings.filter(booking => booking.type === typeFilter);
           }
           
-          // Sắp xếp theo tiêu chí đã chọn
+          // Sửa lại logic sắp xếp thời gian
           switch (sortOrder) {
             case 'newest':
-              filteredBookings.sort((a, b) => new Date(b.bookingDate) - new Date(a.bookingDate));
+              filteredBookings.sort((a, b) => {
+                const dateA = new Date(a.bookingDate);
+                const dateB = new Date(b.bookingDate);
+                return dateB - dateA;
+              });
               break;
             case 'oldest':
-              filteredBookings.sort((a, b) => new Date(a.bookingDate) - new Date(b.bookingDate));
+              filteredBookings.sort((a, b) => {
+                const dateA = new Date(a.bookingDate);
+                const dateB = new Date(b.bookingDate);
+                return dateA - dateB;
+              });
               break;
             case 'price-high':
               filteredBookings.sort((a, b) => b.price - a.price);
@@ -207,18 +233,25 @@ const BookingHistory = () => {
               break;
           }
           
-          // Phân trang
+          // Phân trang (giữ nguyên)
           const startIndex = (currentPage - 1) * itemsPerPage;
           const endIndex = startIndex + itemsPerPage;
           const paginatedBookings = filteredBookings.slice(startIndex, endIndex);
           
-          setBookings(paginatedBookings);
+          // Thêm format date cho mỗi booking
+          const formattedBookings = paginatedBookings.map(booking => ({
+            ...booking,
+            formattedDate: formatDate(booking.bookingDate),
+            formattedTime: formatTime(booking.bookingDate)
+          }));
+          
+          setBookings(formattedBookings);
           setTotalPages(Math.ceil(filteredBookings.length / itemsPerPage));
           setLoading(false);
           return;
         }
         
-        // Code thực gọi API khi không test UI
+        // Code gọi API thực (giữ nguyên)
         try {
           const response = axios.get('/api/history', {
             headers: {
@@ -431,10 +464,10 @@ const BookingHistory = () => {
                   onChange={(e) => setSortOrder(e.target.value)}
                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                 >
-                  <option value="newest">Mới nhất</option>
+                  <option value="newest">Mới đặt nhất</option>
                   <option value="oldest">Cũ nhất</option>
-                  <option value="price-high">Giá cao nhất</option>
-                  <option value="price-low">Giá thấp nhất</option>
+                  <option value="price-high">Giá cao đến thấp</option>
+                  <option value="price-low">Giá thấp đến cao</option>
                 </select>
               </div>
             </div>

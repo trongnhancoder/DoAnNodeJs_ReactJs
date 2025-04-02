@@ -14,6 +14,7 @@ import Menu from './pages/Menu/Menu';
 import Contact from './pages/Contact/Contact';
 import Reservation from './pages/Reservation/Reservation';
 import BookingHistory from './pages/BookingHistory/BookingHistory';
+import CustomerReview from './pages/Review/CustomerReview';
 
 // Import các components Auth
 import Login from './components/User/auth/LoginForm';
@@ -68,6 +69,7 @@ function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/reservation" element={<Reservation />} />
             <Route path="/BookingHistory" element={<BookingHistory />} />
+            <Route path="/CustomerReview" element={<CustomerReview />} />
             {/* <Route path="/booking-details/:id" element={<BookingDetails />} /> */}
            
             

@@ -1,20 +1,17 @@
-// src/components/auth/RegisterForm.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaPhone, FaUserPlus } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaUserPlus } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import FormInput from './FormInput';
 import PasswordInput from './PasswordInput';
 import SubmitButton from './SubmitButton';
 import AuthMessage from './AuthMessage';
 import { registerUser } from '../../../services/authService';
-import CryptoJS from 'crypto-js';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
     password: '',
     confirmPassword: ''
   });
@@ -29,17 +26,14 @@ const RegisterForm = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     
-    // Xóa lỗi khi người dùng nhập lại
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: null }));
     }
     
-    // Xóa thông báo lỗi
     if (message.type === 'error') {
       setMessage({ text: '', type: '' });
     }
     
-    // Kiểm tra mật khẩu xác nhận khi cần
     if ((name === 'password' && formData.confirmPassword && value !== formData.confirmPassword) || 
         (name === 'confirmPassword' && value !== formData.password)) {
       setErrors(prev => ({ ...prev, confirmPassword: 'Mật khẩu không khớp' }));
@@ -51,16 +45,16 @@ const RegisterForm = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name) newErrors.name = "Vui lòng nhập họ tên";
+    if (!formData.name) {
+      newErrors.name = "Vui lòng nhập tên đăng nhập";
+    } else if (formData.name.length < 4) {
+      newErrors.name = "Tên đăng nhập phải có ít nhất 4 ký tự";
+    }
     
     if (!formData.email) {
       newErrors.email = "Vui lòng nhập email";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Email không hợp lệ";
-    }
-    
-    if (formData.phone && !/^\d{9,11}$/.test(formData.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
     }
     
     if (!formData.password) {
@@ -83,60 +77,6 @@ const RegisterForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Hàm xử lý lỗi đã tối ưu
-  const processError = (response) => {
-    const newErrors = {};
-    let errorMessage = '';
-    
-    // Nếu có phản hồi với thông báo lỗi
-    if (response?.message) {
-      const message = response.message.toLowerCase();
-      
-      // Kiểm tra email
-      if (message.includes('email') && 
-          (message.includes('tồn tại') || message.includes('already') || message.includes('used'))) {
-        newErrors.email = 'Email này đã được đăng ký';
-        errorMessage = 'Email đã tồn tại trong hệ thống';
-      } 
-      // Kiểm tra số điện thoại
-      else if ((message.includes('phone') || message.includes('số điện thoại')) && 
-              (message.includes('tồn tại') || message.includes('already') || message.includes('used'))) {
-        newErrors.phone = 'Số điện thoại này đã được đăng ký';
-        errorMessage = 'Số điện thoại đã tồn tại trong hệ thống';
-      } 
-      // Kiểm tra tên đăng nhập
-      else if ((message.includes('username') || message.includes('tên') || message.includes('name')) && 
-               (message.includes('tồn tại') || message.includes('already') || message.includes('used'))) {
-        newErrors.name = 'Tên đăng nhập này đã được sử dụng';
-        errorMessage = 'Tên đăng nhập đã tồn tại trong hệ thống';
-      } else {
-        errorMessage = response.message;
-      }
-    }
-    
-    // Kiểm tra trường errors nếu có
-    if (response?.errors) {
-      if (response.errors.email) newErrors.email = response.errors.email;
-      if (response.errors.phone) newErrors.phone = response.errors.phone;
-      if (response.errors.username || response.errors.name) {
-        newErrors.name = response.errors.username || response.errors.name;
-      }
-      
-      // Nếu không có errorMessage từ trước, lấy thông báo đầu tiên từ errors
-      if (!errorMessage) {
-        const firstError = Object.values(response.errors)[0];
-        errorMessage = firstError || 'Đăng ký thất bại';
-      }
-    }
-    
-    // Nếu không tìm thấy thông báo cụ thể
-    if (!errorMessage) {
-      errorMessage = "Đăng ký thất bại. Vui lòng thử lại.";
-    }
-    
-    return { errors: newErrors, message: errorMessage };
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -146,43 +86,33 @@ const RegisterForm = () => {
     setMessage({ text: '', type: '' });
     
     try {
-      // Mã hóa mật khẩu
-      const hashedPassword = CryptoJS.SHA256(formData.password).toString();
-      
       const response = await registerUser({
         username: formData.name,
-        password: hashedPassword,
         email: formData.email,
-        phone: formData.phone || ''
+        password: formData.password // Gửi password không cần mã hóa
       });
-      
-      // Kiểm tra phản hồi từ API
-      if (response?.status === true || response?.success === true) {
+
+      console.log('Register response:', response);
+
+      if (response.status) {
         setMessage({
           text: "Đăng ký thành công! Vui lòng đăng nhập.",
           type: "success"
         });
         
-        // Chuyển hướng sau 2 giây
         setTimeout(() => navigate("/login"), 2000);
       } else {
-        // Xử lý lỗi nếu có
-        const { errors: fieldErrors, message: errorMessage } = processError(response);
-        setErrors(prev => ({ ...prev, ...fieldErrors }));
-        setMessage({ text: errorMessage, type: 'error' });
-      }
-    } catch (error) {
-      // Xử lý lỗi từ API hoặc mạng
-      if (error.response?.data) {
-        const { errors: fieldErrors, message: errorMessage } = processError(error.response.data);
-        setErrors(prev => ({ ...prev, ...fieldErrors }));
-        setMessage({ text: errorMessage, type: 'error' });
-      } else {
         setMessage({
-          text: "Không thể kết nối đến máy chủ. Vui lòng thử lại sau.",
-          type: "error"
+          text: response.message || 'Đăng ký thất bại',
+          type: 'error'
         });
       }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setMessage({
+        text: 'Có lỗi xảy ra trong quá trình đăng ký',
+        type: 'error'
+      });
     } finally {
       setIsLoading(false);
     }
@@ -195,7 +125,6 @@ const RegisterForm = () => {
       transition={{ duration: 0.5 }}
       className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-auto overflow-hidden"
     >
-      {/* Logo & Heading */}
       <div className="text-center mb-6">
         <motion.div 
           initial={{ scale: 0.8 }}
@@ -251,19 +180,6 @@ const RegisterForm = () => {
             className="bg-gray-50 border-0 rounded-lg shadow-sm"
           />
           
-          <FormInput
-            id="phone"
-            name="phone"
-            type="tel"
-            label="Số điện thoại"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Nhập số điện thoại"
-            error={errors.phone}
-            icon={FaPhone}
-            className="bg-gray-50 border-0 rounded-lg shadow-sm"
-          />
-          
           <PasswordInput
             id="password"
             name="password"
@@ -314,7 +230,6 @@ const RegisterForm = () => {
           />
         </div>
         
-        {/* Đăng nhập */}
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600">
             Đã có tài khoản?{' '}

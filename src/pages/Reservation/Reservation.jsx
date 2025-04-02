@@ -1,193 +1,244 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaUser, FaUtensils, FaFileInvoice } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { menuData } from "../../services/MenuData.js";
-import ReservationForm from "./ReservationForm.jsx";
-import MenuCategoryFilter from "./MenuCategoryFilter.jsx";
-import MenuList from "./MenuList.jsx";
-import Pagination from "./Pagination.jsx";
+import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
 
+// Import components
+import ReservationForm from "../../components/user/Reservation/ReservationForm";
+import MenuSelection from "../../components/user/Reservation/MenuSelection";
+import ConfirmationStep from "../../components/user/Reservation/ConfirmationStep";
 
 function Reservation() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const selectedMenu = location.state?.selectedMenu;
+
+  // States
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
     date: "",
     time: "",
     guests: "",
-    name: "",
+    eventType: "Đặt bàn thường",
     request: "",
-    eventType: "Đặt bàn",
   });
-  const categories = [
-    "Tất cả",
-    "Món khai vị",
-    "Món chính",
-    "Tráng miệng",
-    "Nước uống",
-  ];
-  const [selectedCategory, setSelectedCategory] = useState("Tất cả");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
-  const [selectedItems, setSelectedItems] = useState({});
-  const [totalPrice, setTotalPrice] = useState(0);
+  
+  const [menuItems, setMenuItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useState(
+    selectedMenu ? [{ ...selectedMenu, quantity: 1 }] : []
+  );
+  const [loading, setLoading] = useState(false);
 
+  // Steps configuration
   const steps = [
     { step: 1, title: "Thông tin", icon: FaUser },
     { step: 2, title: "Chọn món", icon: FaUtensils },
     { step: 3, title: "Xác nhận", icon: FaFileInvoice },
   ];
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  // Fetch menu items
+  useEffect(() => {
+    fetchMenuItems();
+  }, []);
+
+  const fetchMenuItems = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://localhost/restapirestaurant/products');
+      setMenuItems(response.data);
+    } catch (error) {
+      console.error('Lỗi khi tải menu:', error);
+      toast.error('Không thể tải danh sách món ăn!');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const isFormValid = () => {
-    return formData.date && formData.time && formData.guests && formData.name;
+  // Form handlers
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (isFormValid()) {
+    if (validateForm()) {
       setCurrentStep(2);
       toast.success("Thông tin đã được lưu!");
-    } else {
-      toast.error("Vui lòng điền đầy đủ thông tin đặt bàn!");
     }
-  };
-  const handleItemIncrement = (item) => {
-    const newSelectedItems = { ...selectedItems };
-    if (newSelectedItems[item.id]) {
-      newSelectedItems[item.id].quantity += 1;
-    } else {
-      newSelectedItems[item.id] = { ...item, quantity: 1 };
-    }
-    setSelectedItems(newSelectedItems);
-    setTotalPrice(totalPrice + item.price);
   };
 
-  const handleItemDecrement = (item) => {
-    const newSelectedItems = { ...selectedItems };
-    if (newSelectedItems[item.id] && newSelectedItems[item.id].quantity > 0) {
-      newSelectedItems[item.id].quantity -= 1;
-      if (newSelectedItems[item.id].quantity === 0) {
-        delete newSelectedItems[item.id];
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast.error("Vui lòng nhập họ tên!");
+      return false;
+    }
+    if (!formData.phone.trim()) {
+      toast.error("Vui lòng nhập số điện thoại!");
+      return false;
+    }
+    if (!formData.date) {
+      toast.error("Vui lòng chọn ngày đặt bàn!");
+      return false;
+    }
+    if (!formData.time) {
+      toast.error("Vui lòng chọn thời gian!");
+      return false;
+    }
+    if (!formData.guests || formData.guests < 1) {
+      toast.error("Vui lòng nhập số lượng khách hợp lệ!");
+      return false;
+    }
+    return true;
+  };
+
+  // Menu selection handlers
+  const handleItemSelect = (item) => {
+    setSelectedItems(prev => {
+      const exists = prev.find(i => i.id === item.id);
+      if (exists) {
+        return prev.filter(i => i.id !== item.id);
       }
-      setSelectedItems(newSelectedItems);
-      setTotalPrice(totalPrice - item.price);
+      return [...prev, { ...item, quantity: 1 }];
+    });
+  };
+
+  const handleQuantityChange = (item, change) => {
+    setSelectedItems(prev => {
+      return prev.map(i => {
+        if (i.id === item.id) {
+          const newQuantity = i.quantity + change;
+          if (newQuantity < 1) {
+            return null;
+          }
+          return { ...i, quantity: newQuantity };
+        }
+        return i;
+      }).filter(Boolean);
+    });
+  };
+
+  // Final submission handler
+  const handleConfirmation = async () => {
+    try {
+      setLoading(true);
+      const reservationData = {
+        ...formData,
+        items: selectedItems.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        total_amount: selectedItems.reduce((sum, item) => 
+          sum + (Number(item.price) * item.quantity), 0
+        )
+      };
+
+      // TODO: Replace with your API endpoint
+      // const response = await axios.post('YOUR_API_ENDPOINT', reservationData);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast.success("Đặt bàn thành công! Cảm ơn quý khách!");
+      navigate('/');
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Menu Filtering and Pagination
-  const filteredMenu =
-    selectedCategory === "Tất cả"
-      ? menuData
-      : menuData.filter((item) => item.category === selectedCategory);
+  // Step progress renderer
+  const renderStepProgress = () => (
+    <div className="max-w-4xl mx-auto mb-8">
+      <div className="flex justify-between items-center relative">
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-gray-200 w-full -z-10" />
+        <div 
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-yellow-500 transition-all duration-500"
+          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+        />
 
-  const totalPages = Math.ceil(filteredMenu.length / itemsPerPage);
-  const paginatedMenu = filteredMenu.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+        {steps.map((step) => (
+          <div
+            key={step.step}
+            className={`flex flex-col items-center ${
+              currentStep >= step.step ? "text-yellow-500" : "text-gray-400"
+            }`}
+          >
+            <div
+              className={`w-12 h-12 rounded-full flex items-center justify-center mb-2
+                ${currentStep >= step.step ? "bg-yellow-500 text-white" : "bg-gray-200"}
+                transition-all duration-500 transform ${currentStep === step.step ? "scale-110" : ""}
+              `}
+            >
+              <step.icon className={`text-xl ${currentStep === step.step ? "animate-bounce" : ""}`} />
+            </div>
+            <span className="text-sm font-medium">{step.title}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
-    setCurrentPage(1);
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  // Final Submit Handler
-  const handleFinalSubmit = () => {
-    toast.success("Đặt bàn thành công! Cảm ơn quý khách!");
-    console.log({
-      formData,
-      selectedItems,
-      totalPrice,
-    });
-
-    // Reset all states
-    setFormData({
-      date: "",
-      time: "",
-      guests: "",
-      name: "",
-      request: "",
-      eventType: "Đặt bàn",
-    });
-    setSelectedItems({});
-    setTotalPrice(0);
-    setCurrentStep(1);
-  };
-
-  // Step Content Renderer
-  const renderStep = () => {
+  // Step content renderer
+  const renderStepContent = () => {
     switch (currentStep) {
       case 1:
         return (
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="bg-white rounded-xl shadow-lg p-6 animate-fadeIn">
               <h2 className="text-2xl font-bold mb-6 text-gray-800">
                 Thông tin đặt bàn
               </h2>
               <ReservationForm
                 formData={formData}
-                handleChange={handleChange}
-                handleSubmit={handleFormSubmit}
+                onChange={handleFormChange}
+                onSubmit={handleFormSubmit}
               />
             </div>
           </div>
         );
+
       case 2:
         return (
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
+            <div className="bg-white rounded-xl shadow-lg p-6 animate-slideIn">
               <h2 className="text-2xl font-bold mb-6 text-gray-800">
                 Chọn món ăn
               </h2>
-              <MenuCategoryFilter
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onCategoryChange={handleCategoryChange}
-              />
-              <MenuList
-                menuItems={paginatedMenu}
-                handleItemIncrement={handleItemIncrement}
-                handleItemDecrement={handleItemDecrement}
+              <MenuSelection
+                menuItems={menuItems}
                 selectedItems={selectedItems}
+                onItemSelect={handleItemSelect}
+                onQuantityChange={handleQuantityChange}
+                loading={loading}
               />
-              <Pagination
-                totalPages={totalPages}
-                currentPage={currentPage}
-                onPageChange={handlePageChange}
-              />
-              <div className="mt-6 border-t pt-4">
-                <h3 className="text-lg font-bold">
-                  Tổng tiền: {totalPrice.toLocaleString()} VND
-                </h3>
-                <div className="flex space-x-4 mt-4">
-                  <button
-                    onClick={() => setCurrentStep(1)}
-                    className="px-6 py-2 bg-gray-500 text-white rounded-md 
-                             hover:bg-gray-600 transition-colors"
-                  >
-                    Quay lại
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (Object.keys(selectedItems).length === 0) {
-                        toast.error("Vui lòng chọn ít nhất một món!");
-                        return;
-                      }
-                      setCurrentStep(3);
-                    }}
-                    className="px-6 py-2 bg-yellow-500 text-white rounded-md 
-                             hover:bg-yellow-600 transition-colors"
-                  >
-                    Tiếp tục
-                  </button>
-                </div>
+              <div className="flex justify-between mt-6 pt-6 border-t">
+                <button
+                  onClick={() => setCurrentStep(1)}
+                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 
+                           transition-colors duration-300"
+                >
+                  Quay lại
+                </button>
+                <button
+                  onClick={() => {
+                    if (selectedItems.length === 0) {
+                      toast.error("Vui lòng chọn ít nhất một món!");
+                      return;
+                    }
+                    setCurrentStep(3);
+                  }}
+                  className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 
+                           transition-all duration-300 transform hover:scale-105"
+                >
+                  Tiếp tục
+                </button>
               </div>
             </div>
           </div>
@@ -195,75 +246,14 @@ function Reservation() {
 
       case 3:
         return (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800">
-                Xác nhận đơn hàng
-              </h2>
-
-              <div className="mb-6 p-4 bg-gray-50 rounded-md">
-                <h3 className="font-semibold mb-3">Thông tin đặt bàn</h3>
-                <div className="space-y-2">
-                  <p>
-                    <span className="font-medium">Ngày:</span> {formData.date}
-                  </p>
-                  <p>
-                    <span className="font-medium">Thời gian:</span>{" "}
-                    {formData.time}
-                  </p>
-                  <p>
-                    <span className="font-medium">Số khách:</span>{" "}
-                    {formData.guests}
-                  </p>
-                  <p>
-                    <span className="font-medium">Tên:</span> {formData.name}
-                  </p>
-                  {formData.request && (
-                    <p>
-                      <span className="font-medium">Yêu cầu đặc biệt:</span>{" "}
-                      {formData.request}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3">Chi tiết món ăn</h3>
-                {Object.values(selectedItems).map((item) => (
-                  <div key={item.id} className="flex justify-between py-2">
-                    <span>
-                      {item.name} x {item.quantity}
-                    </span>
-                    <span>
-                      {(item.price * item.quantity).toLocaleString()} VND
-                    </span>
-                  </div>
-                ))}
-                <div className="mt-4 pt-4 border-t">
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>Tổng cộng:</span>
-                    <span>{totalPrice.toLocaleString()} VND</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex space-x-4">
-                <button
-                  onClick={() => setCurrentStep(2)}
-                  className="px-6 py-2 bg-gray-500 text-white rounded-md 
-                           hover:bg-gray-600 transition-colors"
-                >
-                  Quay lại
-                </button>
-                <button
-                  onClick={handleFinalSubmit}
-                  className="px-6 py-2 bg-green-500 text-white rounded-md 
-                           hover:bg-green-600 transition-colors"
-                >
-                  Xác nhận đặt bàn
-                </button>
-              </div>
-            </div>
+          <div className="animate-fadeIn">
+            <ConfirmationStep
+              formData={formData}
+              selectedItems={selectedItems}
+              onConfirm={handleConfirmation}
+              onBack={() => setCurrentStep(2)}
+              loading={loading}
+            />
           </div>
         );
 
@@ -273,48 +263,15 @@ function Reservation() {
   };
 
   return (
-    <div>
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="container mx-auto px-4">
-          <ToastContainer />
-          <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
-            Đặt lịch trực tuyến
-          </h1>
-          <div className="max-w-4xl mx-auto mb-8">
-            <div className="flex justify-center items-center mb-8">
-              {steps.map((item, index) => (
-                <div key={item.step} className="flex items-center">
-                  <div
-                    className={`flex items-center justify-center w-10 h-10 rounded-full 
-                ${
-                  currentStep >= item.step
-                    ? "bg-yellow-500 text-white"
-                    : "bg-gray-200 text-gray-500"
-                }`}
-                  >
-                    <item.icon className="w-5 h-5" />
-                  </div>
-                  <span
-                    className={`mx-2 text-sm font-medium
-                ${
-                  currentStep >= item.step ? "text-yellow-500" : "text-gray-500"
-                }`}
-                  >
-                    {item.title}
-                  </span>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`w-24 h-1
-                  ${currentStep > item.step ? "bg-yellow-500" : "bg-gray-200"}`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {renderStep()}
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-white py-12">
+      <div className="container mx-auto px-4">
+        <ToastContainer />
+        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
+          Đặt bàn trực tuyến
+        </h1>
+        
+        {renderStepProgress()}
+        {renderStepContent()}
       </div>
     </div>
   );

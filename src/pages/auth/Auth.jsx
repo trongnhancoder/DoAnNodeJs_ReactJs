@@ -1,198 +1,155 @@
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import axios from 'axios';
 
-// Cấu hình base URL cho API
-const API_URL = 'http://localhost/RestAPIRestaurant/users'; // Thay đổi URL này theo API của bạn
+// Components
+import LoginForm from '../../components/User/auth/LoginForm';
+import ForgotPasswordForm from '../../components/User/auth/ForgotPasswordForm';
+import ResetPasswordForm from '../../components/User/auth/ResetPasswordForm';
 
-// Thiết lập axios interceptor để tự động thêm token vào header cho mỗi request
-axios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+const Auth = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
 
-// Hàm đăng nhập người dùng
-export const loginUser = async (credentials) => {
-  try {
-    console.log('Đang gửi dữ liệu đăng nhập:', {
-      username: credentials.username,
-      password: '******' // Che dấu mật khẩu trong log
-    });
-    
-    // Gọi API đăng nhập - điều chỉnh endpoint và cấu trúc dữ liệu theo API của bạn
-    const response = await axios.post(`${API_URL}/login`, {
-      username: credentials.username,
-      password: credentials.password,
-      remember: credentials.remember || false
-    });
-    
-    console.log('Phản hồi đăng nhập:', {
-      status: response.status,
-      success: response.data.success || true
-    });
-    
-    // Nếu API trả về dữ liệu khác cấu trúc, bạn cần điều chỉnh ở đây
-    return {
-      status: true,
-      success: true,
-      data: response.data,
-      message: response.data.message || 'Đăng nhập thành công!'
-    };
-  } catch (error) {
-    console.error('Lỗi đăng nhập:', error);
-    
-    if (error.response) {
-      // Lỗi từ server (status code không phải 2xx)
-      console.log('Lỗi từ server:', error.response.data);
-      
-      return {
-        status: false,
-        success: false,
-        data: null,
-        message: error.response.data.message || 'Tên đăng nhập hoặc mật khẩu không đúng'
-      };
-    }
-    
-    // Lỗi mạng hoặc lỗi không xác định
-    return {
-      status: false,
-      success: false,
-      data: null,
-      message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng!'
-    };
-  }
-};
+  // Xác định form hiện tại dựa vào path
+  const getCurrentForm = () => {
+    const path = location.pathname;
+    if (path === '/forgot-password') return 'forgot';
+    if (path.includes('/reset-password')) return 'reset';
+    return 'login';
+  };
 
-// Đăng xuất
-export const logoutUser = () => {
-  // Xóa token và thông tin người dùng khỏi localStorage và sessionStorage
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  sessionStorage.removeItem('token');
-  sessionStorage.removeItem('user');
-  
-  // Xóa Authorization header
-  delete axios.defaults.headers.common['Authorization'];
-  
-  return { success: true, message: 'Đăng xuất thành công' };
-};
-
-// Kiểm tra trạng thái đăng nhập
-export const checkAuthStatus = () => {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-  const user = localStorage.getItem('user') || sessionStorage.getItem('user');
-  
-  if (token && user) {
+  // Xử lý đăng nhập
+  const handleLogin = async (formData) => {
+    setIsLoading(true);
     try {
-      return {
-        isAuthenticated: true,
-        user: JSON.parse(user)
-      };
+      const response = await axios.post('/api/auth/login', formData);
+      const { token, user } = response.data;
+
+      // Lưu token vào localStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      toast.success('Đăng nhập thành công!');
+      
+      // Chuyển hướng về trang chủ hoặc trang được yêu cầu trước đó
+      const redirectPath = location.state?.from || '/';
+      navigate(redirectPath);
     } catch (error) {
-      console.error('Lỗi phân tích dữ liệu người dùng:', error);
-      return { isAuthenticated: false };
+      toast.error(error.response?.data?.message || 'Đăng nhập thất bại');
+    } finally {
+      setIsLoading(false);
     }
-  }
-  
-  return { isAuthenticated: false };
+  };
+
+  // Xử lý quên mật khẩu
+  const handleForgotPassword = async (email) => {
+    try {
+      setIsLoading(true);
+      // Gọi API forgot password
+      const response = await axios.post('/api/auth/forgot-password', { email });
+      
+      // Nếu API trả về thành công, return true để component con biết
+      if (response.data) {
+        toast.success('Email đã được gửi thành công!');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Xử lý đặt lại mật khẩu
+  const handleResetPassword = async (token, password) => {
+    setIsLoading(true);
+    try {
+      await axios.post('/api/auth/reset-password', {
+        token,
+        password
+      });
+      toast.success('Đặt lại mật khẩu thành công!');
+      navigate('/login');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Xử lý đăng xuất
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+    toast.success('Đăng xuất thành công!');
+  };
+
+  // Render form tương ứng
+  const renderForm = () => {
+    const currentForm = getCurrentForm();
+
+    switch (currentForm) {
+      case 'forgot':
+        return (
+          <ForgotPasswordForm 
+            onSubmit={handleForgotPassword}
+            isLoading={isLoading}
+          />
+        );
+      case 'reset':
+        return (
+          <ResetPasswordForm
+            onSubmit={handleResetPassword}
+            isLoading={isLoading}
+          />
+        );
+      default:
+        return (
+          <LoginForm
+            onSubmit={handleLogin}
+            isLoading={isLoading}
+          />
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-white">
+      <div className="container mx-auto px-4 py-8">
+        {/* Logo hoặc branding */}
+        <div className="text-center mb-8">
+          <img 
+            src="/logo.png" 
+            alt="Logo" 
+            className="h-16 mx-auto mb-4"
+          />
+        </div>
+
+        {/* Form container */}
+        <div className="max-w-md mx-auto">
+          {renderForm()}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-sm text-gray-600">
+          <p>© 2024 Your Restaurant. All rights reserved.</p>
+        </div>
+      </div>
+
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+        </div>
+      )}
+    </div>
+  );
 };
 
-// Hàm đăng ký người dùng
-export const registerUser = async (userData) => {
-  try {
-    const response = await axios.post(`${API_URL}/register`, userData);
-    
-    return {
-      status: true,
-      success: true,
-      data: response.data,
-      message: response.data.message || 'Đăng ký thành công!'
-    };
-  } catch (error) {
-    if (error.response) {
-      return {
-        status: false,
-        success: false,
-        data: null,
-        message: error.response.data.message || 'Đăng ký thất bại',
-        errors: error.response.data.errors || {}
-      };
-    }
-    
-    return {
-      status: false,
-      success: false,
-      data: null,
-      message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.'
-    };
-  }
-};
-
-// Quên mật khẩu
-export const forgotPassword = async (email) => {
-  try {
-    const response = await axios.post(`${API_URL}/forgot-password`, { email });
-    
-    return {
-      status: true,
-      success: true,
-      data: response.data,
-      message: response.data.message || 'Đã gửi email hướng dẫn đặt lại mật khẩu!'
-    };
-  } catch (error) {
-    if (error.response) {
-      return {
-        status: false,
-        success: false,
-        message: error.response.data.message || 'Không thể gửi yêu cầu đặt lại mật khẩu'
-      };
-    }
-    
-    return {
-      status: false,
-      success: false,
-      message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.'
-    };
-  }
-};
-
-// Đặt lại mật khẩu
-export const resetPassword = async (data) => {
-  try {
-    const response = await axios.post(`${API_URL}/reset-password`, data);
-    
-    return {
-      status: true,
-      success: true,
-      data: response.data,
-      message: response.data.message || 'Đặt lại mật khẩu thành công!'
-    };
-  } catch (error) {
-    if (error.response) {
-      return {
-        status: false,
-        success: false,
-        message: error.response.data.message || 'Không thể đặt lại mật khẩu'
-      };
-    }
-    
-    return {
-      status: false,
-      success: false,
-      message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.'
-    };
-  }
-};
-
-export default {
-  loginUser,
-  logoutUser,
-  registerUser,
-  forgotPassword,
-  resetPassword,
-  checkAuthStatus
-};
+export default Auth; 

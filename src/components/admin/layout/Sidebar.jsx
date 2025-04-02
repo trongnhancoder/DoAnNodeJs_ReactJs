@@ -28,7 +28,7 @@ const Sidebar = () => {
       icon: <MdShoppingCart size={20} />
     },
     { 
-      title: 'Cài đặt', 
+      title: 'Đánh Giá Người Dùng', 
       path: '/admin/settings', 
       icon: <MdSettings size={20} />
     }
