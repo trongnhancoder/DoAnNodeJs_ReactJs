@@ -1,4 +1,4 @@
-// src/components/auth/SubmitButton.jsx
+// src/components/User/auth/SubmitButton.jsx
 import { motion } from 'framer-motion';
 import React from 'react';
 import { FaPaperPlane } from 'react-icons/fa';

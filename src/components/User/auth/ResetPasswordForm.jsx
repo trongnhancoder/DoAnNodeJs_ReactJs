@@ -1,3 +1,4 @@
+// src/components/User/auth/ResetPasswordForm.jsx
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaEye, FaEyeSlash, FaLock, FaCheckCircle, FaTimesCircle, FaCheck } from 'react-icons/fa';
@@ -240,4 +241,4 @@ const ResetPasswordForm = ({ onSubmit }) => {
   );
 };
 
-export default ResetPasswordForm; 
+export default ResetPasswordForm;

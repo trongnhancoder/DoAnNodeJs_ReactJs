@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+// Import Auth Routes
+import { ProtectedRoute, PublicRoute } from './routes/AuthRoutes';
+
 // Import components chung
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -20,13 +23,14 @@ import CustomerReview from './pages/Review/CustomerReview';
 import Login from './components/User/auth/LoginForm';
 import Register from './components/User/auth/RegisterForm';
 import ForgotPassword from './components/User/auth/ForgotPasswordForm';
+import ResetPassword from './components/User/auth/ResetPasswordForm';
 
 // Import Admin pages
 import Dashboard from './pages/admin/Dashboard';
 import UsersPage from './pages/admin/users';
 import MenuPage from './pages/admin/menu';
 import OrdersPage from './pages/admin/orders';
-import SettingsPage from './pages/admin/settings';
+import ReviewManagement from './pages/admin/Review';
 
 // Import trang lỗi
 import NotFound from './pages/layout/NotFound';
@@ -56,47 +60,95 @@ function App() {
           progressClassName="bg-yellow-500"
         />
         
-        {/* Điều kiện hiển thị Header và Footer */}
+        {/* Hiển thị Header không cần đăng nhập */}
         {!isAdminRoute(window.location.pathname) && <Header />}
         
         {/* Main content */}
         <main className="flex-grow">
           <Routes>
-            {/* Trang chính */}
+            {/* Trang Auth - Sử dụng PublicRoute */}
+            <Route path="/login" element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } />
+            <Route path="/register" element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            } />
+            <Route path="/forgot-password" element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            } />
+            <Route path="/reset-password/:token" element={
+              <PublicRoute>
+                <ResetPassword />
+              </PublicRoute>
+            } />
+            
+            {/* Các trang xem được mà không cần đăng nhập */}
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/menu" element={<Menu />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/reservation" element={<Reservation />} />
-            <Route path="/BookingHistory" element={<BookingHistory />} />
-            <Route path="/CustomerReview" element={<CustomerReview />} />
-            {/* <Route path="/booking-details/:id" element={<BookingDetails />} /> */}
-           
             
-            {/* Trang Auth */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+            {/* Các trang khác - Vẫn yêu cầu đăng nhập */}
+            <Route path="/contact" element={
+              <ProtectedRoute>
+                <Contact />
+              </ProtectedRoute>
+            } />
+            <Route path="/reservation" element={
+              <ProtectedRoute>
+                <Reservation />
+              </ProtectedRoute>
+            } />
+            <Route path="/BookingHistory" element={
+              <ProtectedRoute>
+                <BookingHistory />
+              </ProtectedRoute>
+            } />
+            <Route path="/CustomerReview" element={
+              <ProtectedRoute>
+                <CustomerReview />
+              </ProtectedRoute>
+            } />
             
-            {/* Routes Admin */}
-            <Route path="/admin" element={<Dashboard />} />
-            <Route path="/admin/users" element={<UsersPage />} />
-            <Route path="/admin/menu" element={<MenuPage />} />
-            <Route path="/admin/orders" element={<OrdersPage />} />
-           
-            <Route path="/admin/settings" element={<SettingsPage />} />
+            {/* Routes Admin - Sử dụng ProtectedRoute */}
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute>
+                <UsersPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/menu" element={
+              <ProtectedRoute>
+                <MenuPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/orders" element={
+              <ProtectedRoute>
+                <OrdersPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/review" element={
+              <ProtectedRoute>
+                <ReviewManagement />
+              </ProtectedRoute>
+            } />
             
-            {/* Trang lỗi - comment các Route tạm thời chưa cần sử dụng */}
-            {/* <Route path="/error/server" element={<ServerError />} /> */}
-            {/* <Route path="/error/unauthorized" element={<UnauthorizedError />} /> */}
-            
-            {/* Chuyển hướng nếu URL không hợp lệ */}
+            {/* Trang lỗi */}
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
         </main>
         
-        {/* Điều kiện hiển thị Footer */}
+        {/* Hiển thị Footer không cần đăng nhập */}
         {!isAdminRoute(window.location.pathname) && <Footer />}
       </div>
     </Router>

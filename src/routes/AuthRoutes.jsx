@@ -1,11 +1,14 @@
-import { Navigate, Route } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import Auth from '../pages/Auth/Auth';
 
 // HOC để bảo vệ các route yêu cầu authentication
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
+  const location = useLocation();
+  
   if (!token) {
-    return <Navigate to="/login" replace />;
+    // Lưu lại đường dẫn hiện tại để sau khi đăng nhập có thể redirect về
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
   return children;
 };
@@ -46,4 +49,4 @@ const AuthRoutes = [
   }
 ];
 
-export { ProtectedRoute, PublicRoute, AuthRoutes }; 
+export { ProtectedRoute, PublicRoute, AuthRoutes };

@@ -1,4 +1,4 @@
-// src/components/auth/AuthLayout.jsx
+// src/components/User/auth/AuthLayout.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';

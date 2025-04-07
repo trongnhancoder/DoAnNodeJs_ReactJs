@@ -1,8 +1,19 @@
+import { useState } from "react";
+import { FaMoneyBill, FaCreditCard } from "react-icons/fa";
+
 const ConfirmationStep = ({ formData, selectedItems, onConfirm, onBack }) => {
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  
   const total = selectedItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+
+  const handleConfirm = () => {
+    // Gọi onConfirm và truyền thêm thông tin về loại đặt chỗ
+    const isParty = paymentMethod === 'cash';
+    onConfirm(paymentMethod, isParty);
+  };
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6">
@@ -63,6 +74,44 @@ const ConfirmationStep = ({ formData, selectedItems, onConfirm, onBack }) => {
           </div>
         </div>
 
+        {/* Phương thức thanh toán */}
+        <div className="border-t pt-4">
+          <h3 className="text-xl font-semibold mb-4">Phương thức thanh toán</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div 
+              className={`border rounded-lg p-3 cursor-pointer transition-all ${paymentMethod === 'cash' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200'}`}
+              onClick={() => setPaymentMethod('cash')}
+            >
+              <div className="flex items-center">
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-2 ${paymentMethod === 'cash' ? 'border-yellow-500' : 'border-gray-400'}`}>
+                  {paymentMethod === 'cash' && <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>}
+                </div>
+                <div className="flex items-center">
+                  <FaMoneyBill className="text-green-600 mr-2" />
+                  <span>Tại nhà hàng</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1 ml-7">Đặt dạng Tiệc (mã TP)</p>
+            </div>
+            
+            <div 
+              className={`border rounded-lg p-3 cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200'}`}
+              onClick={() => setPaymentMethod('online')}
+            >
+              <div className="flex items-center">
+                <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-2 ${paymentMethod === 'online' ? 'border-yellow-500' : 'border-gray-400'}`}>
+                  {paymentMethod === 'online' && <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>}
+                </div>
+                <div className="flex items-center">
+                  <FaCreditCard className="text-blue-600 mr-2" />
+                  <span>Thanh toán online</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1 ml-7">Đặt dạng Phòng (mã RP)</p>
+            </div>
+          </div>
+        </div>
+
         <div className="flex space-x-4 pt-6">
           <button
             onClick={onBack}
@@ -72,7 +121,7 @@ const ConfirmationStep = ({ formData, selectedItems, onConfirm, onBack }) => {
             Quay lại
           </button>
           <button
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="flex-1 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 
                      transition-all duration-300 transform hover:scale-105"
           >
@@ -84,4 +133,4 @@ const ConfirmationStep = ({ formData, selectedItems, onConfirm, onBack }) => {
   );
 };
 
-export default ConfirmationStep; 
+export default ConfirmationStep;

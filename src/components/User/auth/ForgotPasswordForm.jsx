@@ -1,221 +1,136 @@
-// src/components/auth/ForgotPasswordForm.jsx
-import React, { useState, useEffect } from 'react';
+// src/components/User/auth/ForgotPasswordForm.jsx
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaEnvelope, FaPaperPlane, FaArrowLeft } from 'react-icons/fa';
+import { FaEnvelope, FaKey } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'react-hot-toast';
+import FormInput from './FormInput';
 import SubmitButton from './SubmitButton';
+import AuthMessage from './AuthMessage';
+import authService from '../../../services/authService';
 
-const ForgotPasswordForm = ({ onSubmit, isLoading }) => {
+const ForgotPasswordForm = () => {
   const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [countdown, setCountdown] = useState(60);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState({ text: '', type: '' });
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    let timer;
-    if (isSubmitted && countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown(prev => prev - 1);
-      }, 1000);
+  const handleChange = (e) => {
+    setEmail(e.target.value);
+    if (error) setError('');
+    if (message.text) setMessage({ text: '', type: '' });
+  };
+
+  const validateForm = () => {
+    if (!email) {
+      setError('Vui lòng nhập email của bạn');
+      return false;
     }
-    return () => clearInterval(timer);
-  }, [isSubmitted, countdown]);
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Email không hợp lệ');
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!email) {
-      toast.error('Vui lòng nhập email');
-      return;
-    }
-
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
     try {
-      // Đợi kết quả từ onSubmit
-      const success = await onSubmit(email);
+      const result = await authService.forgotPassword(email);
       
-      // Chỉ set isSubmitted khi onSubmit trả về true
-      if (success) {
-        setIsSubmitted(true);
-        setCountdown(60);
+      if (result.status) {
+        setMessage({
+          text: 'Link đặt lại mật khẩu đã được gửi vào email của bạn',
+          type: 'success'
+        });
+        setEmail('');
+      } else {
+        setMessage({
+          text: result.message || 'Không thể gửi yêu cầu đặt lại mật khẩu',
+          type: 'error'
+        });
       }
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Có lỗi xảy ra, vui lòng thử lại');
+      console.error('Forgot password error:', error);
+      setMessage({
+        text: 'Có lỗi xảy ra khi gửi yêu cầu',
+        type: 'error'
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50 py-12 px-4 sm:px-6 lg:px-8"
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-auto overflow-hidden"
     >
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ 
-          type: "spring",
-          stiffness: 260,
-          damping: 20 
-        }}
-        className="mb-8"
-      >
-        <div className="bg-gradient-to-br from-orange-500 to-amber-500 p-5 rounded-full shadow-lg shadow-orange-200">
-          <FaPaperPlane className="h-10 w-10 text-white" />
+      <div className="text-center mb-6">
+        <motion.div 
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="h-16 w-16 bg-gradient-to-br from-yellow-400 to-red-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-3"
+        >
+          <FaKey />
+        </motion.div>
+        <h2 className="text-3xl font-extrabold text-gray-800 mb-2">Quên Mật Khẩu</h2>
+        <p className="text-gray-600">Nhập email của bạn để nhận link đặt lại mật khẩu</p>
+      </div>
+      
+      <AnimatePresence>
+        {message.text && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            <AuthMessage message={message.text} type={message.type} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <FormInput
+          id="email"
+          name="email"
+          type="email"
+          label="Email"
+          value={email}
+          onChange={handleChange}
+          placeholder="Nhập email đã đăng ký"
+          error={error}
+          icon={FaEnvelope}
+          required
+          className="bg-gray-50 border-0 rounded-lg shadow-sm"
+        />
+        
+        <div className="mt-6">
+          <SubmitButton 
+            isLoading={isLoading} 
+            text="Gửi yêu cầu"
+            className="bg-gradient-to-r from-yellow-500 to-red-600 hover:from-yellow-600 hover:to-red-700 w-full py-3 rounded-lg shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] text-white font-medium"
+          />
         </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ y: 20 }}
-        animate={{ y: 0 }}
-        className="max-w-md w-full"
-      >
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="absolute top-4 left-4">
-            <Link
-              to="/login"
-              className="flex items-center text-gray-600 hover:text-orange-500 transition-colors duration-200"
-            >
-              <FaArrowLeft className="h-4 w-4 mr-2" />
-              <span className="text-sm font-medium">Quay lại</span>
+        
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            <Link to="/login" className="font-medium text-yellow-600 hover:text-yellow-500 transition-colors">
+              Quay lại đăng nhập
             </Link>
-          </div>
-
-          <AnimatePresence mode="wait" initial={false}>
-            {!isSubmitted ? (
-              <motion.div
-                key="form"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="p-8"
-              >
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                    Quên mật khẩu?
-                  </h2>
-                  <p className="text-gray-600">
-                    Đừng lo lắng! Chỉ cần nhập email của bạn và chúng tôi sẽ gửi link đặt lại mật khẩu.
-                  </p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                      Email của bạn
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FaEnvelope className="h-5 w-5 text-orange-500" />
-                      </div>
-                      <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl
-                                 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent
-                                 transition-all duration-200 ease-in-out
-                                 text-gray-900 placeholder-gray-400"
-                        placeholder="example@email.com"
-                      />
-                    </div>
-                  </div>
-
-                  <SubmitButton 
-                    isLoading={isLoading}
-                    text="Gửi link đặt lại mật khẩu"
-                    loadingText="Đang gửi..."
-                    icon={<FaPaperPlane className="h-5 w-5" />}
-                  />
-
-                  <div className="text-center mt-6">
-                    <Link
-                      to="/login"
-                      className="inline-flex items-center justify-center px-4 py-2 
-                               text-sm font-medium text-gray-700 hover:text-orange-500 
-                               transition-colors duration-200"
-                    >
-                      <FaArrowLeft className="h-4 w-4 mr-2" />
-                      Quay lại đăng nhập
-                    </Link>
-                  </div>
-                </form>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-8 text-center"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="mx-auto w-20 h-20 bg-gradient-to-br from-orange-100 to-amber-100 
-                           rounded-full flex items-center justify-center mb-6 shadow-inner"
-                >
-                  <FaPaperPlane className="h-10 w-10 text-orange-500" />
-                </motion.div>
-
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  Email đã được gửi!
-                </h3>
-                <div className="space-y-4 mb-8">
-                  <p className="text-gray-600">
-                    Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến email:
-                    <span className="font-medium text-gray-900 block mt-1">{email}</span>
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Vui lòng kiểm tra hộp thư của bạn (bao gồm cả thư spam).
-                  </p>
-                  {countdown > 0 && (
-                    <p className="text-sm text-orange-600">
-                      Link sẽ hết hạn sau {countdown} giây
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-4">
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <Link
-                      to="/login"
-                      className="inline-flex items-center justify-center px-6 py-3 w-full
-                               rounded-xl text-base font-medium text-white
-                               bg-gradient-to-r from-orange-500 to-amber-500 
-                               hover:from-orange-600 hover:to-amber-600
-                               transition-all duration-200 shadow-md hover:shadow-lg"
-                    >
-                      <FaArrowLeft className="h-4 w-4 mr-2" />
-                      Quay lại đăng nhập
-                    </Link>
-                  </motion.div>
-
-                  {countdown === 0 && (
-                    <button
-                      onClick={() => {
-                        handleSubmit({ preventDefault: () => {} });
-                        setCountdown(60);
-                      }}
-                      className="text-orange-500 hover:text-orange-600 text-sm font-medium
-                               transition-colors duration-200"
-                    >
-                      Gửi lại email
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </p>
         </div>
-      </motion.div>
+      </form>
     </motion.div>
   );
 };

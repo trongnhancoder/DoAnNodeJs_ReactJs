@@ -4,6 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { createOrder, formatOrderData } from "../../services/OrderApi";
 
 // Import components
 import ReservationForm from "../../components/user/Reservation/ReservationForm";
@@ -32,6 +33,7 @@ function Reservation() {
     selectedMenu ? [{ ...selectedMenu, quantity: 1 }] : []
   );
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("cash");
 
   // Steps configuration
   const steps = [
@@ -123,31 +125,44 @@ function Reservation() {
   };
 
   // Final submission handler
-  const handleConfirmation = async () => {
+  const handleConfirmation = async (paymentMethod) => {
     try {
       setLoading(true);
-      const reservationData = {
-        ...formData,
-        items: selectedItems.map(item => ({
-          product_id: item.id,
-          quantity: item.quantity,
-          price: item.price
-        })),
-        total_amount: selectedItems.reduce((sum, item) => 
-          sum + (Number(item.price) * item.quantity), 0
-        )
-      };
-
-      // TODO: Replace with your API endpoint
-      // const response = await axios.post('YOUR_API_ENDPOINT', reservationData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
+      // Kiểm tra formData có partyType không
+      console.log("FormData trước khi gửi:", formData);
+      
+      if (!formData.partyType) {
+        // Nếu không có partyType, gán giá trị mặc định
+        setFormData(prev => ({...prev, partyType: 'normal'}));
+      }
+      
+      // Lấy userData và tạo orderData
+      const userData = JSON.parse(localStorage.getItem('userData')) || {
+        id: "Wp46dCAo32SNZytl",
+        username: "Quocdat@123",
+        email: "abc1234@gmail.com"
+      };
+      
+      const orderData = formatOrderData(formData, selectedItems, userData);
+      
+      // Log dữ liệu trực tiếp ở đây để kiểm tra
+      console.log("OrderData sau khi format:", orderData);
+      
+      // Đảm bảo style_tiec được thêm vào
+      if (!orderData.style_tiec) {
+        orderData.style_tiec = "Đặt bàn thường"; // Thêm giá trị mặc định
+      }
+      
+      // Gửi API
+      const response = await createOrder(orderData);
+      console.log("Phản hồi từ server:", response);
+      
       toast.success("Đặt bàn thành công! Cảm ơn quý khách!");
       navigate('/');
     } catch (error) {
-      toast.error("Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại!");
+      console.error("Lỗi khi gửi dữ liệu:", error);
+      toast.error("Có lỗi xảy ra khi xử lý đơn hàng. Vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
@@ -227,17 +242,12 @@ function Reservation() {
                   Quay lại
                 </button>
                 <button
-                  onClick={() => {
-                    if (selectedItems.length === 0) {
-                      toast.error("Vui lòng chọn ít nhất một món!");
-                      return;
-                    }
-                    setCurrentStep(3);
-                  }}
+                  onClick={() => setCurrentStep(3)}
                   className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 
                            transition-all duration-300 transform hover:scale-105"
+                  disabled={loading}
                 >
-                  Tiếp tục
+                  {loading ? "Đang xử lý..." : "Tiếp tục"}
                 </button>
               </div>
             </div>
@@ -251,7 +261,6 @@ function Reservation() {
               formData={formData}
               selectedItems={selectedItems}
               onConfirm={handleConfirmation}
-              onBack={() => setCurrentStep(2)}
               loading={loading}
             />
           </div>

@@ -1,4 +1,4 @@
-// src/components/auth/FormInput.jsx
+// src/components/User/auth/FormInput.jsx
 import React from 'react';
 
 const FormInput = ({ 

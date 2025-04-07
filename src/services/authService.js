@@ -1,70 +1,113 @@
+// src/services/authService.js
 import axios from 'axios';
 
 const API_URL = 'http://localhost/restapirestaurant/users';
 
-export const loginUser = async (userData) => {
-  try {
-    console.log('Sending login data:', userData);
+// Lưu token vào localStorage
+const setToken = (token) => {
+  localStorage.setItem('token', token);
+};
 
+// Lấy token từ localStorage
+export const getToken = () => {
+  return localStorage.getItem('token');
+};
+
+// Xóa token khỏi localStorage
+const removeToken = () => {
+  localStorage.removeItem('token');
+};
+
+// Đăng nhập
+export const login = async (username, password) => {
+  try {
     const response = await axios.post(`${API_URL}/login`, {
-      username: userData.username, // Có thể là username hoặc email
-      password: userData.password
+      username, // Có thể là username hoặc email
+      password
     });
 
-    console.log('Server response:', response.data);
-
-    // Kiểm tra response theo cấu trúc API của bạn
     if (response.data && response.data.status === "success") {
       // API của bạn trả về token khi thành công
+      setToken(response.data.data); // Lưu token
       return {
         status: true,
-        data: response.data.data, // Token từ JWT
+        data: response.data.user,
         message: 'Đăng nhập thành công!'
       };
     } else {
       return {
         status: false,
         data: null,
-        message: response.data.message // Message lỗi từ API
+        message: response.data.message || 'Đăng nhập thất bại'
       };
     }
-
   } catch (error) {
     console.error('Login error:', error);
-    // Xử lý các trường hợp lỗi từ API của bạn
-    const errorMessage = error.response?.data?.message || 'Đăng nhập thất bại';
     return {
       status: false,
       data: null,
-      message: errorMessage
+      message: error.response?.data?.message || 'Đăng nhập thất bại'
     };
   }
 };
-// Hàm đăng ký
-export const registerUser = async (userData) => {
-  try {
-    console.log('Register request:', userData);
 
-    const response = await axios.post(API_URL, {
+// Đăng ký
+export const register = async (userData) => {
+  try {
+    const response = await axios.post(`${API_URL}/register`, {
       username: userData.username,
       email: userData.email,
       password: userData.password
     });
 
-    console.log('Register response:', response.data);
+    console.log('Register API response:', response);
 
-    return {
-      status: true,
-      data: response.data,
-      message: 'Đăng ký thành công!'
-    };
-
+    // Kiểm tra response.data.status nếu API trả về đối tượng JSON
+    if (response.data && response.data.status === "success") {
+      return {
+        status: true,  // Đã sửa thành TRUE
+        data: response.data,
+        message: 'Đăng ký thành công!'
+      };
+    } 
+    // Kiểm tra HTTP status code (200-299 là thành công)
+    else if (response.status >= 200 && response.status < 300) {
+      return {
+        status: true,  // Thành công dựa vào HTTP status
+        data: response.data,
+        message: 'Đăng ký thành công!'
+      };
+    }
+    else {
+      return {
+        status: false,
+        data: null,
+        message: response.data && response.data.message ? response.data.message : 'Đăng ký thất bại'
+      };
+    }
   } catch (error) {
     console.error('Register error:', error);
     return {
       status: false,
       data: null,
-      message: 'Đăng ký thất bại, vui lòng thử lại'
+      message: error.response?.data?.message || 'Đăng ký thất bại, vui lòng thử lại'
     };
   }
+};
+
+// Đăng xuất
+export const logout = () => {
+  removeToken();
+  return {
+    status: true,
+    message: 'Đăng xuất thành công!'
+  };
+};
+
+export default {
+  login,
+  register,
+  logout,
+  getToken,
+  
 };

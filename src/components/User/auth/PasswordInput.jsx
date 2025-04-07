@@ -1,4 +1,4 @@
-// src/components/auth/PasswordInput.jsx
+// src/components/User/auth/PasswordInput.jsx
 import React, { useState } from 'react';
 import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import FormInput from './FormInput';

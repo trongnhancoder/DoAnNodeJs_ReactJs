@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { reviewsMockData } from '../../services/reviewService';
+import AddReviewForm from '../../components/User/Review/AddReviewForm';
+import Modal from '../../components/common/Modal';
 
 const CustomerReview = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showAddReviewModal, setShowAddReviewModal] = useState(false);
   
   // Load dữ liệu mẫu
   useEffect(() => {
@@ -48,6 +51,12 @@ const CustomerReview = () => {
     );
   };
   
+  const handleAddReviewSuccess = () => {
+    // Cập nhật lại danh sách đánh giá sau khi thêm thành công
+    setReviews([...reviews, { /* thông tin đánh giá mới */ }]);
+    setShowAddReviewModal(false);
+  };
+  
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Header section */}
@@ -59,48 +68,63 @@ const CustomerReview = () => {
       </div>
       
       {/* Main content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold text-gray-800">Tất cả đánh giá</h2>
-          </div>
-          
-          {loading ? (
-            <div className="p-6 text-center">
-              <div className="inline-block animate-spin rounded-full border-4 border-indigo-600 border-solid border-t-transparent h-12 w-12 mb-4"></div>
-              <p className="text-gray-600">Đang tải đánh giá...</p>
-            </div>
-          ) : (
-            <div>
-              {reviews.length === 0 ? (
-                <div className="p-6 text-center">
-                  <p className="text-gray-600">Chưa có đánh giá nào.</p>
-                </div>
-              ) : (
-                <ul className="divide-y divide-gray-200">
-                  {reviews.map((review) => (
-                    <li key={review.id} className="p-6">
-                      <div className="flex justify-between">
-                        <h3 className="text-lg font-medium text-gray-900">{review.title}</h3>
-                        <span className="text-gray-600 text-sm">{formatDate(review.date)}</span>
-                      </div>
-                      
-                      <div className="flex items-center mt-1">
-                        {renderStars(review.rating)}
-                        <span className="ml-2 text-sm text-gray-600">{review.rating}/5</span>
-                      </div>
-                      
-                      <p className="mt-3 text-gray-700">{review.content}</p>
-                      
-                      <p className="mt-2 text-sm text-gray-600">Đánh giá bởi: {review.customerName}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
+      <div className="max-w-7xl mx-auto px-4 py-8 bg-white rounded-lg shadow-md">
+        <div className="p-6 border-b flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-gray-800">Tất cả đánh giá</h2>
+          <button 
+            onClick={() => setShowAddReviewModal(true)}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-200"
+          >
+            Viết đánh giá
+          </button>
         </div>
+        
+        {loading ? (
+          <div className="p-6 text-center">
+            <div className="inline-block animate-spin rounded-full border-4 border-indigo-600 border-solid border-t-transparent h-12 w-12 mb-4"></div>
+            <p className="text-gray-600">Đang tải đánh giá...</p>
+          </div>
+        ) : (
+          <div>
+            {reviews.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-gray-600">Chưa có đánh giá nào.</p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-200">
+                {reviews.map((review) => (
+                  <li key={review.id} className="p-6">
+                    <div className="flex justify-between">
+                      <h3 className="text-lg font-medium text-gray-900">{review.title}</h3>
+                      <span className="text-gray-600 text-sm">{formatDate(review.date)}</span>
+                    </div>
+                    
+                    <div className="flex items-center mt-1">
+                      {renderStars(review.rating)}
+                      <span className="ml-2 text-sm text-gray-600">{review.rating}/5</span>
+                    </div>
+                    
+                    <p className="mt-3 text-gray-700">{review.content}</p>
+                    
+                    <p className="mt-2 text-sm text-gray-600">Đánh giá bởi: {review.customerName}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
+
+      <Modal 
+        isOpen={showAddReviewModal} 
+        onClose={() => setShowAddReviewModal(false)}
+      >
+        <AddReviewForm 
+          productId="test-product-id" // Thay thế bằng productId thực tế
+          onSuccess={handleAddReviewSuccess}
+          onClose={() => setShowAddReviewModal(false)}
+        />
+      </Modal>
     </div>
   );
 };

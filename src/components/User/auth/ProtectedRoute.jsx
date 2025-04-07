@@ -1,3 +1,4 @@
+// src/components/User/auth/ProtectedRoute.jsx
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -16,4 +17,4 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-export default ProtectedRoute; 
+export default ProtectedRoute;

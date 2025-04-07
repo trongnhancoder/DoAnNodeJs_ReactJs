@@ -1,3 +1,4 @@
+// src/components/User/auth/RegisterForm.jsx
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaUserPlus } from 'react-icons/fa';
@@ -6,7 +7,7 @@ import FormInput from './FormInput';
 import PasswordInput from './PasswordInput';
 import SubmitButton from './SubmitButton';
 import AuthMessage from './AuthMessage';
-import { registerUser } from '../../../services/authService';
+import authService from '../../../services/authService';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -86,15 +87,15 @@ const RegisterForm = () => {
     setMessage({ text: '', type: '' });
     
     try {
-      const response = await registerUser({
+      const response = await authService.register({
         username: formData.name,
         email: formData.email,
-        password: formData.password // Gửi password không cần mã hóa
+        password: formData.password
       });
 
       console.log('Register response:', response);
 
-      if (response.status) {
+      if (response && response.status === true) {
         setMessage({
           text: "Đăng ký thành công! Vui lòng đăng nhập.",
           type: "success"
@@ -103,7 +104,7 @@ const RegisterForm = () => {
         setTimeout(() => navigate("/login"), 2000);
       } else {
         setMessage({
-          text: response.message || 'Đăng ký thất bại',
+          text: response?.message || 'Đăng ký thất bại',
           type: 'error'
         });
       }
