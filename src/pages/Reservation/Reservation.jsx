@@ -100,28 +100,128 @@ function Reservation() {
 
   // Menu selection handlers
   const handleItemSelect = (item) => {
-    setSelectedItems(prev => {
-      const exists = prev.find(i => i.id === item.id);
+    setSelectedItems((prev) => {
+      const exists = prev.find((i) => i.id === item.id);
       if (exists) {
-        return prev.filter(i => i.id !== item.id);
+        // Nếu món đã tồn tại, tăng số lượng lên 1
+        return prev.map((i) =>
+          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+        );
       }
+      // Nếu món chưa tồn tại, thêm vào danh sách với số lượng 1
       return [...prev, { ...item, quantity: 1 }];
     });
   };
+  
 
   const handleQuantityChange = (item, change) => {
-    setSelectedItems(prev => {
-      return prev.map(i => {
+  setSelectedItems((prev) => {
+    return prev
+      .map((i) => {
         if (i.id === item.id) {
           const newQuantity = i.quantity + change;
+          // Nếu số lượng nhỏ hơn 1, loại bỏ món khỏi danh sách
           if (newQuantity < 1) {
             return null;
           }
           return { ...i, quantity: newQuantity };
         }
         return i;
-      }).filter(Boolean);
-    });
+      })
+      .filter(Boolean); // Loại bỏ các mục null
+  });
+};
+
+  // Hàm để lấy thông tin người dùng từ token JWT
+  const getUserDataFromToken = () => {
+    try {
+      // Lấy token từ localStorage
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        console.error("Không tìm thấy token");
+        return null;
+      }
+      
+      // Giải mã token JWT (không sử dụng thư viện)
+      // Token JWT có 3 phần: header.payload.signature
+      const tokenParts = token.split('.');
+      if (tokenParts.length !== 3) {
+        console.error("Token không hợp lệ");
+        return null;
+      }
+      
+      // Giải mã phần payload (phần thứ 2 của token)
+      const payload = tokenParts[1];
+      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      
+      // Parse JSON để lấy dữ liệu
+      const userData = JSON.parse(jsonPayload);
+      console.log("Thông tin người dùng từ token:", userData);
+      
+      return {
+        id: userData.user_id || userData.id || userData.sub,
+        username: userData.username || userData.name,
+        email: userData.email
+      };
+    } catch (error) {
+      console.error("Lỗi khi giải mã token:", error);
+      return null;
+    }
+  };
+
+  // Lấy thông tin người dùng từ localStorage với xử lý lỗi tốt hơn
+  const getUserData = () => {
+    // Thử lấy dữ liệu từ token trước
+    const tokenData = getUserDataFromToken();
+    if (tokenData) return tokenData;
+    
+    let userData = null;
+    
+    // Thử lấy từ userData
+    try {
+      const userDataStr = localStorage.getItem('userData');
+      if (userDataStr) {
+        userData = JSON.parse(userDataStr);
+        if (userData && userData.id) return userData;
+      }
+    } catch (e) {
+      console.error("Lỗi khi parse userData:", e);
+    }
+    
+    // Thử lấy từ user
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        userData = JSON.parse(userStr);
+        if (userData && userData.id) return userData;
+      }
+    } catch (e) {
+      console.error("Lỗi khi parse user:", e);
+    }
+    
+    // Thử lấy từ các trường riêng lẻ
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+      return {
+        id: userId,
+        username: localStorage.getItem('username') || "Khách",
+        email: localStorage.getItem('email') || ""
+      };
+    }
+    
+    // Dữ liệu mặc định nếu không tìm thấy
+    return {
+      id: "guest_" + Date.now(),
+      username: "Khách",
+      email: ""
+    };
   };
 
   // Final submission handler
@@ -137,21 +237,28 @@ function Reservation() {
         setFormData(prev => ({...prev, partyType: 'normal'}));
       }
       
-      // Lấy userData và tạo orderData
-      const userData = JSON.parse(localStorage.getItem('userData')) || {
-        id: "Wp46dCAo32SNZytl",
-        username: "Quocdat@123",
-        email: "abc1234@gmail.com"
-      };
+      // Lấy thông tin người dùng từ token và các nguồn khác
+      const userData = getUserData();
+      console.log("Thông tin người dùng:", userData);
       
+      // Kiểm tra có user_id không
+      if (!userData || !userData.id) {
+        toast.error("Không thể xác định thông tin người dùng. Vui lòng đăng nhập lại!");
+        setTimeout(() => navigate('/login'), 2000);
+        return;
+      }
+      
+      // Format dữ liệu đơn hàng
       const orderData = formatOrderData(formData, selectedItems, userData);
-      
-      // Log dữ liệu trực tiếp ở đây để kiểm tra
       console.log("OrderData sau khi format:", orderData);
       
-      // Đảm bảo style_tiec được thêm vào
+      // Đảm bảo các trường quan trọng được điền đầy đủ
       if (!orderData.style_tiec) {
-        orderData.style_tiec = "Đặt bàn thường"; // Thêm giá trị mặc định
+        orderData.style_tiec = formData.eventType || "Đặt bàn thường";
+      }
+      
+      if (!orderData.user_id && userData.id) {
+        orderData.user_id = userData.id;
       }
       
       // Gửi API
@@ -159,7 +266,7 @@ function Reservation() {
       console.log("Phản hồi từ server:", response);
       
       toast.success("Đặt bàn thành công! Cảm ơn quý khách!");
-      navigate('/');
+      setTimeout(() => navigate('/'), 1500);
     } catch (error) {
       console.error("Lỗi khi gửi dữ liệu:", error);
       toast.error("Có lỗi xảy ra khi xử lý đơn hàng. Vui lòng thử lại!");
@@ -235,7 +342,7 @@ function Reservation() {
               />
               <div className="flex justify-between mt-6 pt-6 border-t">
                 <button
-                  onClick={() => setCurrentStep(1)}
+                  onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
                   className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 
                            transition-colors duration-300"
                 >
@@ -263,6 +370,15 @@ function Reservation() {
               onConfirm={handleConfirmation}
               loading={loading}
             />
+            <div className="flex justify-between mt-6 pt-6 border-t">
+              <button
+                onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 1))}
+                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 
+                         transition-colors duration-300"
+              >
+                Quay lại
+              </button>
+            </div>
           </div>
         );
 

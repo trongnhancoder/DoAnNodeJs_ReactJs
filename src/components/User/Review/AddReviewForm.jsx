@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import  {addReview}  from '../../../services/reviewService';
+import axios from 'axios';
 import StarRating from './StarRating';
 
 const AddReviewForm = ({ productId, onSuccess, onClose }) => {
@@ -78,27 +78,38 @@ const AddReviewForm = ({ productId, onSuccess, onClose }) => {
     setSuccessMessage('');
     
     try {
-      await addReview({
-        productId,
-        ...formData,
-        date: new Date().toISOString()
+      const reviewData = {
+        customerName: formData.customerName,
+        rating: formData.rating,
+        title: formData.title,
+        content: formData.content
+      };
+      
+      console.log('Dữ liệu gửi đi:', reviewData);
+      
+      // Sử dụng URL thông qua proxy
+      const response = await axios.post('/api/reviews/create', reviewData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
       
-      setSuccessMessage('Cảm ơn bạn đã gửi đánh giá! Đánh giá của bạn sẽ được hiển thị sau khi được phê duyệt.');
-
-      // Đặt thời gian đóng modal sau khi hiển thị thông báo thành công
-      setTimeout(() => {
-        onSuccess();
-      }, 2000);
-      
+      console.log('Response:', response.data);
+      setSuccessMessage('Cảm ơn bạn đã gửi đánh giá!');
+      setTimeout(() => onSuccess(), 2000);
     } catch (error) {
-      setErrors({ ...errors, submit: error.message || 'Đã xảy ra lỗi khi gửi đánh giá. Vui lòng thử lại sau.' });
+      console.error('Lỗi:', error);
+      setErrors({
+        ...errors,
+        submit: error.response?.data?.message || 'Không thể gửi đánh giá. Vui lòng thử lại sau.'
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Hiển thị số ký tự còn lại cho nội dung đánh giá
+  
   const contentCharactersLeft = 1000 - (formData.content?.length || 0);
   const contentCharactersClass = contentCharactersLeft < 50 
     ? 'text-red-500' 
@@ -270,4 +281,4 @@ const AddReviewForm = ({ productId, onSuccess, onClose }) => {
   );
 };
 
-export default AddReviewForm; 
+export default AddReviewForm;
