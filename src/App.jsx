@@ -30,7 +30,7 @@ import Dashboard from './pages/admin/Dashboard';
 import UsersPage from './pages/admin/users';
 import MenuPage from './pages/admin/menu';
 import OrdersPage from './pages/admin/orders';
-import ReviewManagement from './pages/admin/Review';
+// import ReviewManagement from './pages/admin/Review';
 
 // Import trang lỗi
 import NotFound from './pages/layout/NotFound';
